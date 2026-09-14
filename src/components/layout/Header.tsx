@@ -131,7 +131,7 @@ export function Header({ userEmail, userName }: HeaderProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="my-1.5" />
             <DropdownMenuItem
-              onClick={() => router.push('/onboarding')}
+              onClick={() => router.push('/settings')}
               className="cursor-pointer flex items-center gap-2 text-xs px-2.5 py-2 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
               <Settings className="h-3.5 w-3.5" /> Adjust Goals & Metrics
@@ -140,9 +140,9 @@ export function Header({ userEmail, userName }: HeaderProps) {
             <div className="pt-1">
               <DropdownMenuItem
                 onClick={handleSignOut}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 focus:bg-red-600 text-white focus:text-white font-semibold text-xs transition-all shadow-md shadow-red-500/25 active:scale-95 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 focus:bg-red-600 text-white focus:text-white font-semibold text-xs transition-all shadow-md shadow-red-500/25 active:scale-95 cursor-pointer [&_svg]:!text-white"
               >
-                <LogOut className="h-4 w-4" /> Log Out
+                <LogOut className="h-4 w-4 !text-white text-white shrink-0" /> Log Out
               </DropdownMenuItem>
             </div>
           </DropdownMenuContent>
