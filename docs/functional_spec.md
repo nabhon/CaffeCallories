@@ -122,19 +122,29 @@ create policy "Users can view and manage their own entries"
 
 ---
 
-## 5. UI / UX Architecture
+## 5. UI / UX Architecture & Mobile-First Design System
 
-### 5.1 Main View (`/`)
+### 5.1 Aesthetic Direction & Visual Thesis
+- **Aesthetic Stance**: **Warm Editorial & Modern Wellness Minimal**
+  - Blends cozy coffeehouse tones (warm espresso, honey amber `#F59E0B`, deep stone `#1C1917`) with clean modern health app minimalism.
+- **Differentiation Anchor**:
+  - The **Floating Thumb-Zone Center Orb**: An elevated, soft-glowing center action button with a sparkled flame icon that invites natural interaction without reaching to the top of the phone.
+  - **Dynamic Calorie Gauge**: Tactile circular and segmented budget meters providing instant, at-a-glance caloric clarity in under 2 seconds.
+- **Viewport Ergonomics (Strictly Mobile-First)**:
+  - Designed natively for 390px–430px smartphone viewports (touch targets $\ge$ 44px, bottom-sheet interactions, safe-area inset padding `pb-safe`).
+  - Centered responsive container on desktop (`max-w-md mx-auto min-h-screen border-x border-neutral-200/60 dark:border-neutral-800/60 shadow-xl`) to preserve native mobile app aesthetics across all screens.
+
+### 5.2 Main View (`/` - Today's Overview)
 - **Calorie Budget Hero**: Daily Target vs. Intake vs. Burn $\rightarrow$ Net Total and Remaining kcal.
 - **Macro Progress**: Segmented bars for Protein, Carbs, and Fat against daily targets.
 - **Today's Feed**: Scrollable chronological list of entries with icons, badges, and delete action.
 
-### 5.2 Calendar View (`/calendar`)
+### 5.3 Calendar View (`/calendar`)
 - **Month Grid**: Calendar cells badge daily net calories (e.g., `+1,850` or `-320`).
 - **Day Detail Inspector**: Selecting any day loads all logs recorded on that date.
 - **Item Removal**: Trash button next to each entry with immediate local removal and backend sync.
 
-### 5.3 Bottom Navigation & Quick Add Modal
+### 5.4 Bottom Navigation & Quick Add Modal
 - Fixed bottom navigation bar with Home, Calendar, and a prominent elevated center Add button.
 - Tapping Add opens a bottom sheet with natural language input.
 - Displays an editable preview card before saving.
