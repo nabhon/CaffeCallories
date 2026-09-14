@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { MobileShell } from '@/components/layout/MobileShell'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { FloatingNavFab } from '@/components/layout/FloatingNavFab'
 import { QuickAddDrawer } from '@/components/entries/QuickAddDrawer'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -16,6 +17,7 @@ import {
   Trash2,
   Calendar as CalendarIcon,
   Loader2,
+  Plus,
 } from 'lucide-react'
 import type { Entry, Profile } from '@/types/database'
 
@@ -217,212 +219,241 @@ export default function CalendarPage() {
       {/* Sticky Header */}
       <Header userEmail={userProfile?.email} userName={userProfile?.name} />
 
-      {/* Main Content */}
-      <main className="flex-1 px-4 py-4 space-y-4 pb-28 overflow-y-auto">
-        {/* Month Navigation & Title */}
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold text-stone-900 dark:text-stone-100">
-              {monthName}
-            </h1>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              aria-label="Previous month"
-              className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              aria-label="Next month"
-              className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+      {/* Main Content Area - Expands to Responsive 2-Column Grid on Desktop */}
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-12 overflow-y-auto">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* Left Column on Desktop: Monthly Calendar Grid & Controls */}
+            <div className="md:col-span-7 lg:col-span-7 space-y-4">
+              {/* Month Navigation & Title */}
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg sm:text-xl font-bold text-stone-900 dark:text-stone-100">
+                    {monthName}
+                  </h1>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date()
+                      setCurrentDate(today)
+                      setSelectedDate(today)
+                    }}
+                    className="text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-all cursor-pointer"
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePrevMonth}
+                    aria-label="Previous month"
+                    className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextMonth}
+                    aria-label="Next month"
+                    className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
 
-        {/* MONTHLY CALENDAR GRID */}
-        <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/90 dark:bg-stone-900/90 p-3.5 shadow-xs space-y-2">
-          {/* Day of Week Headers */}
-          <div className="grid grid-cols-7 text-center">
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
-              <span
-                key={idx}
-                className="text-[11px] font-semibold text-stone-400 py-1"
-              >
-                {day}
-              </span>
-            ))}
-          </div>
-
-          {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((item) => {
-              if (!item.date) {
-                return <div key={item.dateKey} className="h-13 rounded-xl" />
-              }
-
-              const isSelected = item.dateKey === selectedDateKey
-              const isToday = item.dateKey === todayKey
-              const dayData = entriesByDate[item.dateKey]
-              const hasEntries = dayData && dayData.entries.length > 0
-
-              return (
-                <button
-                  key={item.dateKey}
-                  type="button"
-                  onClick={() => setSelectedDate(item.date!)}
-                  className={`h-13 rounded-xl flex flex-col items-center justify-between p-1 transition-all cursor-pointer text-center relative ${
-                    isSelected
-                      ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25 font-bold ring-2 ring-amber-500/40'
-                      : isToday
-                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/40 font-semibold'
-                      : 'hover:bg-stone-200/60 dark:hover:bg-stone-800/60 text-stone-700 dark:text-stone-300'
-                  }`}
-                >
-                  {/* Day Number */}
-                  <span className="text-xs">{item.date.getDate()}</span>
-
-                  {/* Net Calorie Badge */}
-                  {hasEntries ? (
+              {/* MONTHLY CALENDAR GRID */}
+              <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/90 dark:bg-stone-900/90 p-3.5 sm:p-5 shadow-xs space-y-3">
+                {/* Day of Week Headers */}
+                <div className="grid grid-cols-7 text-center">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
                     <span
-                      className={`text-[9px] font-bold tracking-tight px-1 rounded-sm leading-tight truncate w-full ${
-                        isSelected
-                          ? 'text-white/95'
-                          : dayData.netCalories < 0
-                          ? 'text-orange-600 dark:text-orange-400'
-                          : 'text-emerald-600 dark:text-emerald-400'
-                      }`}
+                      key={idx}
+                      className="text-xs font-semibold text-stone-400 py-1"
                     >
-                      {dayData.netCalories > 0 ? `+${dayData.netCalories}` : dayData.netCalories}
+                      {day}
                     </span>
-                  ) : (
-                    <span className="h-2" />
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+                  ))}
+                </div>
 
-        {/* SELECTED DAY DETAIL INSPECTOR */}
-        <div className="rounded-2xl border border-stone-200/80 dark:border-stone-800/80 bg-card p-4 space-y-3 shadow-xs">
-          <div className="flex items-center justify-between border-b border-stone-200/60 dark:border-stone-800/60 pb-3">
-            <div className="space-y-0.5">
-              <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                <CalendarIcon className="h-4 w-4 text-amber-500" />
-                {selectedDateFormatted}
-              </h2>
-              <div className="flex items-center gap-2 text-[11px] text-stone-400">
-                <span>Food: +{selectedDayData.totalIntake} kcal</span>
-                <span>•</span>
-                <span>Burn: -{selectedDayData.totalBurn} kcal</span>
+                {/* Days Grid */}
+                <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                  {calendarDays.map((item) => {
+                    if (!item.date) {
+                      return <div key={item.dateKey} className="h-14 sm:h-16 md:h-18 rounded-2xl" />
+                    }
+
+                    const isSelected = item.dateKey === selectedDateKey
+                    const isToday = item.dateKey === todayKey
+                    const dayData = entriesByDate[item.dateKey]
+                    const hasEntries = dayData && dayData.entries.length > 0
+
+                    return (
+                      <button
+                        key={item.dateKey}
+                        type="button"
+                        onClick={() => setSelectedDate(item.date!)}
+                        className={`h-14 sm:h-16 md:h-18 rounded-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 transition-all cursor-pointer text-center relative ${
+                          isSelected
+                            ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25 font-bold ring-2 ring-amber-500/40'
+                            : isToday
+                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/40 font-semibold'
+                            : 'hover:bg-stone-200/60 dark:hover:bg-stone-800/60 text-stone-700 dark:text-stone-300'
+                        }`}
+                      >
+                        {/* Day Number */}
+                        <span className="text-xs sm:text-sm font-semibold">{item.date.getDate()}</span>
+
+                        {/* Net Calorie Badge */}
+                        {hasEntries ? (
+                          <div className="w-full flex flex-col items-center">
+                            <span
+                              className={`text-[9px] sm:text-[10px] md:text-xs font-bold tracking-tight px-1 py-0.5 rounded-md leading-tight truncate max-w-full ${
+                                isSelected
+                                  ? 'text-white/95 bg-white/20'
+                                  : dayData.netCalories < 0
+                                  ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10'
+                                  : 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
+                              }`}
+                            >
+                              {dayData.netCalories > 0 ? `+${dayData.netCalories}` : dayData.netCalories}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="h-2" />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
 
-            {/* Net Total for Day */}
-            <Badge
-              variant="outline"
-              className={`text-xs font-bold ${
-                selectedDayData.netCalories < 0
-                  ? 'border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-500/5'
-                  : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5'
-              }`}
-            >
-              Net: {selectedDayData.netCalories > 0 ? `+${selectedDayData.netCalories}` : selectedDayData.netCalories} kcal
-            </Badge>
-          </div>
-
-          {/* Itemized List for Selected Day */}
-          {selectedDayData.entries.length === 0 ? (
-            <div className="py-6 text-center space-y-1.5">
-              <p className="text-xs font-medium text-stone-500">
-                No entries recorded for this date
-              </p>
-              <p className="text-[11px] text-stone-400">
-                Tap the center + button below to log food or workouts.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2 pt-1">
-              {selectedDayData.entries.map((entry) => {
-                const timeString = new Date(entry.logged_at).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-                const isBurn = entry.entry_type === 'burn'
-
-                return (
-                  <div
-                    key={entry.id}
-                    className="rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/40 p-3 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                          isBurn
-                            ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
-                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        }`}
-                      >
-                        {isBurn ? <Dumbbell className="h-4 w-4" /> : <Utensils className="h-4 w-4" />}
-                      </div>
-
-                      <div className="min-w-0 space-y-0.5">
-                        <div className="text-xs font-semibold text-stone-900 dark:text-stone-100 truncate">
-                          {entry.name}
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] text-stone-400">
-                          <span>{timeString}</span>
-                          {!isBurn && (
-                            <span className="font-mono">
-                              {Math.round(Number(entry.protein_g))}p • {Math.round(Number(entry.carbs_g))}c • {Math.round(Number(entry.fat_g))}f
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span
-                        className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
-                          isBurn
-                            ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10'
-                            : 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-                        }`}
-                      >
-                        {isBurn ? `-${Math.abs(entry.calories)}` : `+${entry.calories}`}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                        disabled={deletingId === entry.id}
-                        aria-label="Remove entry"
-                        className="text-stone-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
-                      >
-                        {deletingId === entry.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-3.5 w-3.5" />
-                        )}
-                      </button>
+            {/* Right Column on Desktop: Selected Day Detail Inspector */}
+            <div className="md:col-span-5 lg:col-span-5 space-y-4 md:sticky md:top-20">
+              <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-card p-5 space-y-4 shadow-xs">
+                <div className="flex items-center justify-between border-b border-stone-200/60 dark:border-stone-800/60 pb-3.5">
+                  <div className="space-y-1">
+                    <h2 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                      <CalendarIcon className="h-4 w-4 text-amber-500" />
+                      {selectedDateFormatted}
+                    </h2>
+                    <div className="flex items-center gap-2 text-xs text-stone-400">
+                      <span>Food: +{selectedDayData.totalIntake} kcal</span>
+                      <span>•</span>
+                      <span>Burn: -{selectedDayData.totalBurn} kcal</span>
                     </div>
                   </div>
-                )
-              })}
+
+                  {/* Net Total for Day */}
+                  <Badge
+                    variant="outline"
+                    className={`text-xs font-bold px-2.5 py-1 ${
+                      selectedDayData.netCalories < 0
+                        ? 'border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-500/5'
+                        : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5'
+                    }`}
+                  >
+                    Net: {selectedDayData.netCalories > 0 ? `+${selectedDayData.netCalories}` : selectedDayData.netCalories} kcal
+                  </Badge>
+                </div>
+
+                {/* Itemized List for Selected Day */}
+                {selectedDayData.entries.length === 0 ? (
+                  <div className="py-8 text-center space-y-3">
+                    <p className="text-xs sm:text-sm font-medium text-stone-500">
+                      No entries recorded for this date
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickAddOpen(true)}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold transition-all cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Log for this date
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 pt-1">
+                    {selectedDayData.entries.map((entry) => {
+                      const timeString = new Date(entry.logged_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                      const isBurn = entry.entry_type === 'burn'
+
+                      return (
+                        <div
+                          key={entry.id}
+                          className="group rounded-2xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/40 p-3.5 flex items-center justify-between hover:border-stone-300 dark:hover:border-stone-700 transition-all"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                                isBurn
+                                  ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              }`}
+                            >
+                              {isBurn ? <Dumbbell className="h-4 w-4" /> : <Utensils className="h-4 w-4" />}
+                            </div>
+
+                            <div className="min-w-0 space-y-0.5">
+                              <div className="text-xs sm:text-sm font-semibold text-stone-900 dark:text-stone-100 truncate">
+                                {entry.name}
+                              </div>
+                              <div className="flex items-center gap-2 text-[11px] text-stone-400">
+                                <span>{timeString}</span>
+                                {!isBurn && (
+                                  <span className="font-mono">
+                                    {Math.round(Number(entry.protein_g))}p • {Math.round(Number(entry.carbs_g))}c • {Math.round(Number(entry.fat_g))}f
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={`text-xs font-bold px-2 py-0.5 rounded-lg ${
+                                isBurn
+                                  ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10'
+                                  : 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
+                              }`}
+                            >
+                              {isBurn ? `-${Math.abs(entry.calories)}` : `+${entry.calories}`}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteEntry(entry.id)}
+                              disabled={deletingId === entry.id}
+                              aria-label="Remove entry"
+                              className="text-stone-400 hover:text-red-500 transition-colors p-1.5 cursor-pointer rounded-lg hover:bg-red-500/10"
+                            >
+                              {deletingId === entry.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </main>
 
-      {/* Floating Bottom Navigation */}
+      {/* Floating Bottom Navigation (Mobile Only) */}
       <BottomNav onOpenQuickAdd={() => setIsQuickAddOpen(true)} />
+
+      {/* Floating Action Button (Active on desktop) */}
+      <FloatingNavFab onOpenQuickAdd={() => setIsQuickAddOpen(true)} />
 
       {/* Quick Add Drawer */}
       {userId && (

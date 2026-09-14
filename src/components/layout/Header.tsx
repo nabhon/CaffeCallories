@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { Flame, Sparkles, LogOut, Settings } from 'lucide-react'
 import {
   DropdownMenu,
@@ -11,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   userEmail?: string | null
@@ -20,6 +21,7 @@ interface HeaderProps {
 
 export function Header({ userEmail, userName }: HeaderProps) {
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleSignOut = async () => {
     try {
@@ -47,9 +49,10 @@ export function Header({ userEmail, userName }: HeaderProps) {
     : 'CC'
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-background/85 backdrop-blur-md border-b border-stone-200/60 dark:border-stone-800/60">
-      {/* Brand & Date */}
-      <div className="flex items-center gap-2.5">
+    <header className="sticky top-0 z-30 w-full bg-background/85 backdrop-blur-md border-b border-stone-200/60 dark:border-stone-800/60">
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
+        {/* Brand & Date */}
+        <div className="flex items-center gap-2.5">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs">
           <Flame className="h-5 w-5" />
         </div>
@@ -65,6 +68,30 @@ export function Header({ userEmail, userName }: HeaderProps) {
           </div>
         </div>
       </div>
+
+      {/* Desktop Navigation Links */}
+      <nav className="hidden md:flex items-center gap-1 bg-stone-100 dark:bg-stone-900 p-1 rounded-xl border border-stone-200/60 dark:border-stone-800/60">
+        <Link
+          href="/"
+          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            pathname === '/'
+              ? 'bg-amber-500 text-white shadow-xs'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+          }`}
+        >
+          Today
+        </Link>
+        <Link
+          href="/calendar"
+          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            pathname.startsWith('/calendar')
+              ? 'bg-amber-500 text-white shadow-xs'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+          }`}
+        >
+          Calendar
+        </Link>
+      </nav>
 
       {/* User Avatar & Dropdown */}
       <DropdownMenu>
@@ -98,6 +125,7 @@ export function Header({ userEmail, userName }: HeaderProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   )
 }
