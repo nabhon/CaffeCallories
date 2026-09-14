@@ -53,7 +53,7 @@ export function Header({ userEmail, userName }: HeaderProps) {
   const healthMessage = t.header.healthMessages[messageIndex] || t.header.healthMessages[0]
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-background/85 backdrop-blur-md border-b border-stone-200/60 dark:border-stone-800/60">
+    <header className="sticky top-0 z-30 w-full bg-background/95 md:bg-background/85 md:backdrop-blur-md border-b border-stone-200/60 dark:border-stone-800/60 transform-gpu">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
         {/* Logo & Welcome Greeting */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">

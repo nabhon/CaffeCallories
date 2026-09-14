@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import type { FoodRecommendationItem } from '@/types/database'
 
 /**
  * Invalidate all entry queries and day_logs across all views (Today dashboard and Calendar).
@@ -75,6 +76,39 @@ export async function invalidateSettings(queryClient: QueryClient, userId?: stri
   return queryClient.invalidateQueries({
     queryKey: userId ? ['settings', userId] : ['settings'],
   })
+}
+
+/**
+ * Quickly log a recommended food item directly into entries.
+ */
+export async function quickLogRecommendationEntry(
+  queryClient: QueryClient,
+  params: {
+    userId: string
+    item: FoodRecommendationItem
+  }
+) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('entries')
+    .insert({
+      user_id: params.userId,
+      name: params.item.name,
+      entry_type: 'intake',
+      calories: Math.abs(params.item.calories),
+      protein_g: params.item.protein_g,
+      carbs_g: params.item.carbs_g,
+      fat_g: params.item.fat_g,
+      logged_at: new Date().toISOString(),
+      raw_prompt: `AI Recommendation: ${params.item.name}`,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  await invalidateEntries(queryClient)
+  return data
 }
 
 /**

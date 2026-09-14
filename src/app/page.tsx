@@ -9,13 +9,22 @@ import {
   useUserProfile,
   useUserSettings,
   useTodayEntries,
+  useTodayDayLog,
 } from '@/lib/api/queries'
 import { invalidateEntries } from '@/lib/api/mutations'
+import dynamic from 'next/dynamic'
 import { MobileShell } from '@/components/layout/MobileShell'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingNavFab } from '@/components/layout/FloatingNavFab'
-import { QuickAddDrawer } from '@/components/entries/QuickAddDrawer'
+import { RecommendationFab } from '@/components/recommendations/RecommendationFab'
+import { TodayRecommendationCard } from '@/components/recommendations/TodayRecommendationCard'
+import type { DayRecommendationsData } from '@/types/database'
+
+const QuickAddDrawer = dynamic(
+  () => import('@/components/entries/QuickAddDrawer').then((m) => m.QuickAddDrawer),
+  { ssr: false }
+)
 import { TodaySkeleton } from '@/components/skeletons/TodaySkeleton'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -68,6 +77,45 @@ export default function TodayDashboardPage() {
   }, [settingsFetched, userSettings, user, router])
 
   const { data: todayEntries = [], isLoading: entriesLoading } = useTodayEntries(userId)
+
+  // Local date formatted as YYYY-MM-DD
+  const todayDateStr = useMemo(() => {
+    const d = new Date()
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }, [])
+
+  // Today's day log (including daily AI food recommendations)
+  const { data: todayDayLog } = useTodayDayLog(userId)
+
+  // Local recommendations state (provides immediate reactivity and offline/local fallback)
+  const [localRecommendations, setLocalRecommendations] = useState<DayRecommendationsData | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const d = new Date()
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      const today = `${y}-${m}-${day}`
+      const cached = localStorage.getItem(`caffecallories_rec_${today}`)
+      return cached ? JSON.parse(cached) : null
+    } catch {
+      return null
+    }
+  })
+
+  const handleRecommendationsUpdated = (data: DayRecommendationsData) => {
+    setLocalRecommendations(data)
+    try {
+      localStorage.setItem(`caffecallories_rec_${todayDateStr}`, JSON.stringify(data))
+    } catch {
+      // ignore
+    }
+  }
+
+  const recommendations = localRecommendations || (todayDayLog?.recommendations as unknown as DayRecommendationsData | null) || null
 
   const isLoading =
     userLoading || (!!userId && (profileLoading || settingsLoading || entriesLoading))
@@ -321,7 +369,24 @@ export default function TodayDashboardPage() {
           </div>
 
           {/* Right Column on Desktop: Today's Feed */}
-          <div className="md:col-span-7 lg:col-span-7 space-y-3">
+          <div className="md:col-span-7 lg:col-span-7 space-y-4">
+            {/* Daily AI Food Recommendations (Persists for the day when generated) */}
+            <TodayRecommendationCard
+              userId={userId}
+              recommendations={recommendations}
+              date={todayDateStr}
+              dailyGoal={metrics.dailyGoal}
+              netCalories={metrics.netCalories}
+              remainingCalories={metrics.remainingCalories}
+              targetProtein={metrics.targetProtein}
+              currentProtein={metrics.protein}
+              targetCarbs={metrics.targetCarbs}
+              currentCarbs={metrics.carbs}
+              targetFat={metrics.targetFat}
+              currentFat={metrics.fat}
+              onRecommendationsUpdated={handleRecommendationsUpdated}
+            />
+
             <div className="flex items-center justify-between pb-1">
               <h2 className="text-sm sm:text-base font-bold text-stone-800 dark:text-stone-200 flex items-center gap-2">
                 {t.dashboard.todaysTimeline}
@@ -435,6 +500,21 @@ export default function TodayDashboardPage() {
 
       {/* Floating Action Button (Active across screens, especially replacing bottom bar on desktop) */}
       <FloatingNavFab onOpenQuickAdd={() => setIsQuickAddOpen(true)} />
+
+      {/* AI Food Recommendation Floating Action Button & Speech Bubble */}
+      <RecommendationFab
+        date={todayDateStr}
+        dailyGoal={metrics.dailyGoal}
+        netCalories={metrics.netCalories}
+        remainingCalories={metrics.remainingCalories}
+        targetProtein={metrics.targetProtein}
+        currentProtein={metrics.protein}
+        targetCarbs={metrics.targetCarbs}
+        currentCarbs={metrics.carbs}
+        targetFat={metrics.targetFat}
+        currentFat={metrics.fat}
+        onRecommendationsUpdated={handleRecommendationsUpdated}
+      />
 
       {/* Quick Add Drawer (AI Powered) */}
       {userId && (

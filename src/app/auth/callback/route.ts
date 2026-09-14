@@ -6,6 +6,11 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
+  // Compute effective origin for localhost vs production reverse proxy
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const isLocal = process.env.NODE_ENV === 'development'
+  const effectiveOrigin = !isLocal && forwardedHost ? `https://${forwardedHost}` : origin
+
   if (code) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
@@ -20,12 +25,13 @@ export async function GET(request: Request) {
 
       // If profile is missing or height is null, redirect to onboarding
       if (!profile || !profile.height_cm) {
-        return NextResponse.redirect(`${origin}/onboarding`)
+        return NextResponse.redirect(`${effectiveOrigin}/onboarding`)
       }
 
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${effectiveOrigin}${next}`)
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+  return NextResponse.redirect(`${effectiveOrigin}/login?error=auth_failed`)
 }
+

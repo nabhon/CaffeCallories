@@ -87,6 +87,7 @@ export interface Database {
           total_protein_g: number
           total_carbs_g: number
           total_fat_g: number
+          recommendations?: Json | null
           created_at: string
           updated_at: string
         }
@@ -104,6 +105,7 @@ export interface Database {
           total_protein_g?: number
           total_carbs_g?: number
           total_fat_g?: number
+          recommendations?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -121,6 +123,7 @@ export interface Database {
           total_protein_g?: number
           total_carbs_g?: number
           total_fat_g?: number
+          recommendations?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -193,3 +196,18 @@ export type Entry = Database['public']['Tables']['entries']['Row']
 export type NewEntry = Database['public']['Tables']['entries']['Insert']
 export type DayLog = Database['public']['Tables']['day_logs']['Row']
 export type NewDayLog = Database['public']['Tables']['day_logs']['Insert']
+
+export interface FoodRecommendationItem {
+  id: string
+  name: string
+  calories: number
+  protein_g: number
+  carbs_g: number
+  fat_g: number
+  reason?: string
+}
+
+export interface DayRecommendationsData {
+  generated_at: string
+  items: FoodRecommendationItem[]
+}

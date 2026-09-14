@@ -6,12 +6,17 @@ import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useCurrentUser, useUserProfile, useUserSettings } from '@/lib/api/queries'
 import { invalidateProfile, invalidateSettings } from '@/lib/api/mutations'
+import dynamic from 'next/dynamic'
 import { MobileShell } from '@/components/layout/MobileShell'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingNavFab } from '@/components/layout/FloatingNavFab'
-import { QuickAddDrawer } from '@/components/entries/QuickAddDrawer'
 import { SettingsSkeleton } from '@/components/skeletons/SettingsSkeleton'
+
+const QuickAddDrawer = dynamic(
+  () => import('@/components/entries/QuickAddDrawer').then((m) => m.QuickAddDrawer),
+  { ssr: false }
+)
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'

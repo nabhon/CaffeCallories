@@ -17,7 +17,7 @@ export function BottomNav({ onOpenQuickAdd }: BottomNavProps) {
   const isCalendar = pathname.startsWith('/calendar')
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto h-18 bg-background/90 backdrop-blur-lg border-t border-stone-200/60 dark:border-stone-800/60 flex items-center justify-around px-8 z-40">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto h-18 bg-background/95 border-t border-stone-200/60 dark:border-stone-800/60 flex items-center justify-around px-8 z-40 transform-gpu">
       {/* Today Tab */}
       <Link
         href="/"

@@ -12,12 +12,17 @@ import {
   useMonthDayLogs,
 } from '@/lib/api/queries'
 import { invalidateEntries, updateDayLogGoal } from '@/lib/api/mutations'
+import dynamic from 'next/dynamic'
 import { MobileShell } from '@/components/layout/MobileShell'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingNavFab } from '@/components/layout/FloatingNavFab'
-import { QuickAddDrawer } from '@/components/entries/QuickAddDrawer'
 import { CalendarSkeleton } from '@/components/skeletons/CalendarSkeleton'
+
+const QuickAddDrawer = dynamic(
+  () => import('@/components/entries/QuickAddDrawer').then((m) => m.QuickAddDrawer),
+  { ssr: false }
+)
 import { Badge } from '@/components/ui/badge'
 import {
   ChevronLeft,

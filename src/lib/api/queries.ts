@@ -223,3 +223,14 @@ export function useDayLog(userId: string | null | undefined, dateStr: string) {
   })
 }
 
+// 8. Today's day_log helper query
+export function useTodayDayLog(userId: string | null | undefined) {
+  const today = new Date()
+  const y = today.getFullYear()
+  const m = String(today.getMonth() + 1).padStart(2, '0')
+  const d = String(today.getDate()).padStart(2, '0')
+  const todayStr = `${y}-${m}-${d}`
+
+  return useDayLog(userId, todayStr)
+}
+

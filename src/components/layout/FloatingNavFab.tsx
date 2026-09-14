@@ -18,7 +18,7 @@ export function FloatingNavFab({ onOpenQuickAdd }: FloatingNavFabProps) {
   const isCalendar = pathname.startsWith('/calendar')
 
   return (
-    <div className="fixed bottom-8 right-8 z-50 hidden md:flex flex-col items-end gap-3">
+    <div className="fixed bottom-8 right-8 z-50 hidden md:flex flex-col items-end gap-3 transform-gpu">
       {/* Expanded Speed Dial Menu Options */}
       {isOpen && (
         <div className="flex flex-col items-end gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">

@@ -157,4 +157,22 @@ export interface TranslationDictionary {
     authFailed: string
     unexpectedError: string
   }
+  recommendation: {
+    fabTooltip: string
+    bubbleTitle: string
+    bubbleQuestion: string
+    bubbleRemainingCal: string
+    bubbleRemainingProtein: string
+    askButton: string
+    askingButton: string
+    closeButton: string
+    cardTitle: string
+    cardSubtitle: string
+    refreshButton: string
+    quickLog: string
+    logging: string
+    loggedSuccess: string
+    serviceUnavailable: string
+    reasonLabel: string
+  }
 }
