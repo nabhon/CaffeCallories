@@ -90,6 +90,14 @@ export interface TranslationDictionary {
     fatLabel: string
     entryTypeIntake: string
     entryTypeBurn: string
+    itemsDetected: string
+    saveAllEntries: string
+    addAnotherItem: string
+    removeItem: string
+    totalSummary: string
+    noItemsLeft: string
+    editPrompt: string
+    itemName: string
   }
   settings: {
     pageTitle: string
