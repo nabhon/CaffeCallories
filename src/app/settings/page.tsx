@@ -24,9 +24,11 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import type { Profile } from '@/types/database'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function SettingsPage() {
   const router = useRouter()
+  const { language, t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -53,7 +55,7 @@ export default function SettingsPage() {
 
   // Load user session, profile, and existing settings on mount
   useEffect(() => {
-    document.title = 'Settings | Callories'
+    document.title = language === 'th' ? 'ตั้งค่า | Callories' : 'Settings | Callories'
     let ignore = false
 
     async function loadData() {
@@ -122,7 +124,7 @@ export default function SettingsPage() {
     return () => {
       ignore = true
     }
-  }, [router])
+  }, [router, language])
 
   // Real-time calculated targets based on current biometric inputs
   const calculation = useMemo(() => {
@@ -189,7 +191,7 @@ export default function SettingsPage() {
 
         // Update local userProfile state
         setUserProfile((prev) => (prev ? { ...prev, name: name.trim() } : null))
-        setSuccessMessage('Your settings and targets have been successfully updated!')
+        setSuccessMessage(t.settings.successMessage)
 
         // Auto-clear success message after 4s
         setTimeout(() => setSuccessMessage(null), 4000)
@@ -211,7 +213,7 @@ export default function SettingsPage() {
       <MobileShell>
         <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-xs text-stone-400">Loading your settings...</p>
+          <p className="text-xs text-stone-400">{t.settings.loadingSettings}</p>
         </div>
       </MobileShell>
     )
@@ -238,16 +240,16 @@ export default function SettingsPage() {
                   <ArrowLeft className="h-4 w-4" />
                 </button>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-                  Settings & Goals
+                  {t.settings.pageTitle}
                 </h1>
               </div>
               <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 pl-8">
-                Adjust your personal biometrics, activity levels, and daily calorie targets.
+                {t.settings.pageSubtitle}
               </p>
             </div>
 
             <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5 text-xs py-1">
-              BMI: {bmi}
+              {t.settings.bmiLabel}: {bmi}
             </Badge>
           </div>
 
@@ -273,20 +275,20 @@ export default function SettingsPage() {
                 {/* 1. Biometrics Card */}
                 <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-card p-5 sm:p-6 shadow-xs space-y-4">
                   <div className="flex items-center gap-2 text-sm font-bold text-stone-900 dark:text-stone-100">
-                    <User className="h-4 w-4 text-amber-500" /> Personal Biometrics
+                    <User className="h-4 w-4 text-amber-500" /> {t.settings.personalBiometrics}
                   </div>
 
                   <div className="space-y-4">
                     {/* Name */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                        Display Name
+                        {t.settings.displayName}
                       </label>
                       <Input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Your name"
+                        placeholder={t.settings.displayNamePlaceholder}
                         className="h-11 rounded-xl bg-stone-50/50 dark:bg-stone-900/50 border-stone-200 dark:border-stone-800"
                       />
                     </div>
@@ -294,7 +296,7 @@ export default function SettingsPage() {
                     {/* Gender Selector */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                        Biological Sex
+                        {t.settings.biologicalSex}
                       </label>
                       <div className="grid grid-cols-2 gap-2.5">
                         <button
@@ -306,7 +308,7 @@ export default function SettingsPage() {
                               : 'border-stone-200 dark:border-stone-800 bg-card text-stone-600 dark:text-stone-400 hover:border-stone-300'
                           }`}
                         >
-                          {gender === 'male' && <Check className="h-4 w-4" />} Male
+                          {gender === 'male' && <Check className="h-4 w-4" />} {t.settings.male}
                         </button>
                         <button
                           type="button"
@@ -317,7 +319,7 @@ export default function SettingsPage() {
                               : 'border-stone-200 dark:border-stone-800 bg-card text-stone-600 dark:text-stone-400 hover:border-stone-300'
                           }`}
                         >
-                          {gender === 'female' && <Check className="h-4 w-4" />} Female
+                          {gender === 'female' && <Check className="h-4 w-4" />} {t.settings.female}
                         </button>
                       </div>
                     </div>
@@ -325,7 +327,7 @@ export default function SettingsPage() {
                     {/* Age, Height, Weight Grid */}
                     <div className="grid grid-cols-3 gap-2.5">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Age</label>
+                        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">{t.settings.age}</label>
                         <Input
                           type="number"
                           min={12}
@@ -336,7 +338,7 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Height (cm)</label>
+                        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">{t.settings.height}</label>
                         <Input
                           type="number"
                           min={100}
@@ -347,7 +349,7 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Weight (kg)</label>
+                        <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">{t.settings.weight}</label>
                         <Input
                           type="number"
                           min={30}
@@ -364,15 +366,15 @@ export default function SettingsPage() {
                 {/* 2. Activity Level Card */}
                 <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-card p-5 sm:p-6 shadow-xs space-y-4">
                   <div className="flex items-center gap-2 text-sm font-bold text-stone-900 dark:text-stone-100">
-                    <Activity className="h-4 w-4 text-amber-500" /> Activity Level
+                    <Activity className="h-4 w-4 text-amber-500" /> {t.settings.activityLevel}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {[
-                      { id: 'sedentary', label: 'Sedentary', desc: 'Desk job, little exercise' },
-                      { id: 'light', label: 'Lightly Active', desc: '1–3 workouts / week' },
-                      { id: 'moderate', label: 'Moderately Active', desc: '3–5 workouts / week' },
-                      { id: 'active', label: 'Very Active', desc: '6–7 intense workouts / week' },
+                      { id: 'sedentary', label: t.settings.activityLevels.sedentary.label, desc: t.settings.activityLevels.sedentary.desc },
+                      { id: 'light', label: t.settings.activityLevels.light.label, desc: t.settings.activityLevels.light.desc },
+                      { id: 'moderate', label: t.settings.activityLevels.moderate.label, desc: t.settings.activityLevels.moderate.desc },
+                      { id: 'active', label: t.settings.activityLevels.active.label, desc: t.settings.activityLevels.active.desc },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -397,14 +399,14 @@ export default function SettingsPage() {
                 {/* 3. Primary Goal Card */}
                 <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-card p-5 sm:p-6 shadow-xs space-y-4">
                   <div className="flex items-center gap-2 text-sm font-bold text-stone-900 dark:text-stone-100">
-                    <Target className="h-4 w-4 text-amber-500" /> Fitness Goal
+                    <Target className="h-4 w-4 text-amber-500" /> {t.settings.fitnessGoal}
                   </div>
 
                   <div className="grid grid-cols-3 gap-2.5">
                     {[
-                      { id: 'cut', label: 'Lose Fat', desc: '-400 kcal' },
-                      { id: 'maintain', label: 'Maintain', desc: 'Balanced' },
-                      { id: 'bulk', label: 'Gain Muscle', desc: '+350 kcal' },
+                      { id: 'cut', label: t.settings.fitnessGoals.cut.label, desc: t.settings.fitnessGoals.cut.desc },
+                      { id: 'maintain', label: t.settings.fitnessGoals.maintain.label, desc: t.settings.fitnessGoals.maintain.desc },
+                      { id: 'bulk', label: t.settings.fitnessGoals.bulk.label, desc: t.settings.fitnessGoals.bulk.desc },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -428,10 +430,10 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                        Manual Target Customization
+                        {t.settings.manualCustomization}
                       </div>
                       <div className="text-xs text-stone-400">
-                        Override calculated Mifflin-St Jeor formula with custom targets
+                        {t.settings.manualCustomizationDesc}
                       </div>
                     </div>
                     <button
@@ -443,7 +445,7 @@ export default function SettingsPage() {
                           : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800'
                       }`}
                     >
-                      {useCustomTargets ? 'Manual Mode' : 'Auto TDEE'}
+                      {useCustomTargets ? t.settings.manualMode : t.settings.autoMode}
                     </button>
                   </div>
 
@@ -451,7 +453,7 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 animate-in fade-in duration-200">
                       <div className="space-y-1">
                         <label className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                          Calories (kcal)
+                          {t.quickAdd.caloriesLabel}
                         </label>
                         <Input
                           type="number"
@@ -462,7 +464,7 @@ export default function SettingsPage() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[11px] font-semibold text-red-600 dark:text-red-400">
-                          Protein (g)
+                          {t.quickAdd.proteinLabel}
                         </label>
                         <Input
                           type="number"
@@ -473,7 +475,7 @@ export default function SettingsPage() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">
-                          Carbs (g)
+                          {t.quickAdd.carbsLabel}
                         </label>
                         <Input
                           type="number"
@@ -484,7 +486,7 @@ export default function SettingsPage() {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[11px] font-semibold text-orange-600 dark:text-orange-400">
-                          Fat (g)
+                          {t.quickAdd.fatLabel}
                         </label>
                         <Input
                           type="number"
@@ -504,13 +506,13 @@ export default function SettingsPage() {
               <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/90 dark:bg-stone-900/90 p-5 sm:p-6 space-y-4 shadow-xs relative overflow-hidden">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
-                    <Sparkles className="h-4 w-4 text-amber-500" /> Active Daily Target
+                    <Sparkles className="h-4 w-4 text-amber-500" /> {t.settings.activeDailyTarget}
                   </span>
                   <Badge
                     variant="outline"
                     className="text-[11px] border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5 font-mono"
                   >
-                    BMR: {calculation.bmr} kcal
+                    {t.settings.bmrLabel}: {calculation.bmr} kcal
                   </Badge>
                 </div>
 
@@ -524,19 +526,19 @@ export default function SettingsPage() {
                 {/* Macro Split Pills */}
                 <div className="grid grid-cols-3 gap-2.5 pt-2 border-t border-stone-200/60 dark:border-stone-800/60">
                   <div className="rounded-2xl bg-red-500/10 border border-red-500/20 p-3 text-center">
-                    <div className="text-[10px] font-semibold text-red-600 dark:text-red-400">PROTEIN</div>
+                    <div className="text-[10px] font-semibold text-red-600 dark:text-red-400">{t.common.protein}</div>
                     <div className="text-sm sm:text-base font-bold text-red-700 dark:text-red-300">
                       {activeProtein}g
                     </div>
                   </div>
                   <div className="rounded-2xl bg-blue-500/10 border border-blue-500/20 p-3 text-center">
-                    <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">CARBS</div>
+                    <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">{t.common.carbs}</div>
                     <div className="text-sm sm:text-base font-bold text-blue-700 dark:text-blue-300">
                       {activeCarbs}g
                     </div>
                   </div>
                   <div className="rounded-2xl bg-orange-500/10 border border-orange-500/20 p-3 text-center">
-                    <div className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">FAT</div>
+                    <div className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">{t.common.fat}</div>
                     <div className="text-sm sm:text-base font-bold text-orange-700 dark:text-orange-300">
                       {activeFat}g
                     </div>
@@ -553,11 +555,11 @@ export default function SettingsPage() {
               >
                 {saving ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" /> Saving Changes...
+                    <Loader2 className="h-5 w-5 animate-spin" /> {t.settings.savingChanges}
                   </>
                 ) : (
                   <>
-                    <Save className="h-5 w-5" /> Save Changes
+                    <Save className="h-5 w-5" /> {t.settings.saveChanges}
                   </>
                 )}
               </Button>

@@ -20,9 +20,11 @@ import {
   Loader2,
 } from 'lucide-react'
 import type { Entry, ProfileSettings, Profile } from '@/types/database'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function TodayDashboardPage() {
   const router = useRouter()
+  const { language, t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
@@ -31,9 +33,13 @@ export default function TodayDashboardPage() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
+  // Dynamic localized page title
+  useEffect(() => {
+    document.title = language === 'th' ? 'วันนี้ Callories' : 'Today Callories'
+  }, [language])
+
   // Fetch initial user, settings, and today's logs on mount
   useEffect(() => {
-    document.title = 'Today Callories'
     let ignore = false
 
     async function loadData() {
@@ -180,7 +186,7 @@ export default function TodayDashboardPage() {
       <MobileShell>
         <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-xs text-stone-400">Loading your calorie budget...</p>
+          <p className="text-xs text-stone-400">{t.dashboard.loadingBudget}</p>
         </div>
       </MobileShell>
     )
@@ -207,13 +213,13 @@ export default function TodayDashboardPage() {
 
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
-                  <Flame className="h-4 w-4 text-amber-500" /> Remaining Today
+                  <Flame className="h-4 w-4 text-amber-500" /> {t.dashboard.remainingToday}
                 </span>
                 <Badge
                   variant="outline"
                   className="text-[11px] font-semibold border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5"
                 >
-                  {metrics.progressPercent}% of Goal
+                  {metrics.progressPercent}% {t.dashboard.ofGoal}
                 </Badge>
               </div>
 
@@ -229,7 +235,7 @@ export default function TodayDashboardPage() {
                   {metrics.remainingCalories.toLocaleString()}
                 </span>
                 <span className="text-sm font-medium text-stone-500">
-                  {metrics.remainingCalories < 0 ? 'kcal over' : 'kcal left'}
+                  {metrics.remainingCalories < 0 ? t.dashboard.kcalOver : t.dashboard.kcalLeft}
                 </span>
               </div>
 
@@ -244,14 +250,14 @@ export default function TodayDashboardPage() {
               {/* Sub-Metric Summary Grid */}
               <div className="grid grid-cols-3 gap-2 pt-2 border-t border-stone-200/60 dark:border-stone-800/60">
                 <div className="text-center">
-                  <div className="text-[10px] uppercase font-semibold text-stone-400">Target</div>
+                  <div className="text-[10px] uppercase font-semibold text-stone-400">{t.common.target}</div>
                   <div className="text-xs sm:text-sm font-bold text-stone-700 dark:text-stone-300">
                     {metrics.dailyGoal.toLocaleString()}
                   </div>
                 </div>
                 <div className="text-center border-x border-stone-200/60 dark:border-stone-800/60">
                   <div className="text-[10px] uppercase font-semibold text-emerald-600 dark:text-emerald-400">
-                    Intake
+                    {t.common.intake}
                   </div>
                   <div className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400">
                     {metrics.totalIntake.toLocaleString()}
@@ -259,7 +265,7 @@ export default function TodayDashboardPage() {
                 </div>
                 <div className="text-center">
                   <div className="text-[10px] uppercase font-semibold text-orange-600 dark:text-orange-400">
-                    Burn
+                    {t.common.burn}
                   </div>
                   <div className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400">
                     {metrics.totalBurn.toLocaleString()}
@@ -272,7 +278,7 @@ export default function TodayDashboardPage() {
             <div className="rounded-2xl border border-stone-200/80 dark:border-stone-800/80 bg-card p-5 space-y-3.5 shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-stone-800 dark:text-stone-200">
-                  Macronutrients
+                  {t.dashboard.macronutrients}
                 </span>
                 <span className="text-[11px] text-stone-400">Daily targets</span>
               </div>
@@ -282,7 +288,7 @@ export default function TodayDashboardPage() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-red-500" /> Protein
+                      <span className="h-2 w-2 rounded-full bg-red-500" /> {t.common.protein}
                     </span>
                     <span className="text-stone-600 dark:text-stone-400 font-medium">
                       {metrics.totalProtein}g / {metrics.targetProtein}g
@@ -302,7 +308,7 @@ export default function TodayDashboardPage() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-blue-500" /> Carbs
+                      <span className="h-2 w-2 rounded-full bg-blue-500" /> {t.common.carbs}
                     </span>
                     <span className="text-stone-600 dark:text-stone-400 font-medium">
                       {metrics.totalCarbs}g / {metrics.targetCarbs}g
@@ -322,7 +328,7 @@ export default function TodayDashboardPage() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-orange-500" /> Fat
+                      <span className="h-2 w-2 rounded-full bg-orange-500" /> {t.common.fat}
                     </span>
                     <span className="text-stone-600 dark:text-stone-400 font-medium">
                       {metrics.totalFat}g / {metrics.targetFat}g
@@ -345,9 +351,9 @@ export default function TodayDashboardPage() {
           <div className="md:col-span-7 lg:col-span-7 space-y-3">
             <div className="flex items-center justify-between pb-1">
               <h2 className="text-sm sm:text-base font-bold text-stone-800 dark:text-stone-200 flex items-center gap-2">
-                Today&apos;s Logs
+                {t.dashboard.todaysTimeline}
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
-                  {todayEntries.length} items
+                  {todayEntries.length} {language === 'th' ? 'รายการ' : 'items'}
                 </Badge>
               </h2>
             </div>
@@ -360,10 +366,10 @@ export default function TodayDashboardPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-stone-700 dark:text-stone-300">
-                    No logs recorded today
+                    {t.dashboard.noEntriesYet}
                   </p>
                   <p className="text-xs text-stone-400 max-w-sm mx-auto">
-                    Use the floating action button below to log meals or workouts in Thai or English.
+                    {t.dashboard.startLogging}
                   </p>
                 </div>
                 <button
@@ -371,7 +377,7 @@ export default function TodayDashboardPage() {
                   onClick={() => setIsQuickAddOpen(true)}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold transition-all cursor-pointer"
                 >
-                  <Plus className="h-4 w-4" /> Log first entry
+                  <Plus className="h-4 w-4" /> {t.dashboard.quickAdd}
                 </button>
               </div>
             ) : (

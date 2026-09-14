@@ -20,6 +20,7 @@ import {
   Plus,
 } from 'lucide-react'
 import type { Entry, Profile } from '@/types/database'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 function formatLocalDateKey(d: Date): string {
   const y = d.getFullYear()
@@ -30,6 +31,7 @@ function formatLocalDateKey(d: Date): string {
 
 export default function CalendarPage() {
   const router = useRouter()
+  const { language, t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
@@ -42,9 +44,13 @@ export default function CalendarPage() {
   const currentYear = currentDate.getFullYear()
   const currentMonth = currentDate.getMonth()
 
+  // Dynamic localized page title
+  useEffect(() => {
+    document.title = language === 'th' ? 'ปฏิทิน Callories' : 'Calendar Callories'
+  }, [language])
+
   // Load user session and month's entries
   useEffect(() => {
-    document.title = 'Calendar Callories'
     let ignore = false
 
     async function loadData() {
@@ -191,12 +197,12 @@ export default function CalendarPage() {
     setMonthEntries((prev) => [newEntry, ...prev])
   }
 
-  const monthName = currentDate.toLocaleDateString('en-US', {
+  const monthName = currentDate.toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', {
     month: 'long',
     year: 'numeric',
   })
 
-  const selectedDateFormatted = selectedDate.toLocaleDateString('en-US', {
+  const selectedDateFormatted = selectedDate.toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -209,7 +215,7 @@ export default function CalendarPage() {
       <MobileShell>
         <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-xs text-stone-400">Loading your history...</p>
+          <p className="text-xs text-stone-400">{t.calendar.loadingCalendar}</p>
         </div>
       </MobileShell>
     )
@@ -243,7 +249,7 @@ export default function CalendarPage() {
                     }}
                     className="text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-all cursor-pointer"
                   >
-                    Today
+                    {t.common.today}
                   </button>
                   <button
                     type="button"
@@ -268,7 +274,7 @@ export default function CalendarPage() {
               <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/90 dark:bg-stone-900/90 p-3.5 sm:p-5 shadow-xs space-y-3">
                 {/* Day of Week Headers */}
                 <div className="grid grid-cols-7 text-center">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
+                  {t.calendar.daysShort.map((day, idx) => (
                     <span
                       key={idx}
                       className="text-xs font-semibold text-stone-400 py-1"
@@ -363,9 +369,9 @@ export default function CalendarPage() {
                       {selectedDateFormatted}
                     </h2>
                     <div className="flex items-center gap-2 text-xs text-stone-400">
-                      <span>Intake: {selectedDayData.totalIntake} kcal</span>
+                      <span>{t.common.intake}: {selectedDayData.totalIntake} kcal</span>
                       <span>•</span>
-                      <span>Burn: {selectedDayData.totalBurn} kcal</span>
+                      <span>{t.common.burn}: {selectedDayData.totalBurn} kcal</span>
                     </div>
                   </div>
 
@@ -378,7 +384,7 @@ export default function CalendarPage() {
                         : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5'
                     }`}
                   >
-                    Net: {selectedDayData.netCalories > 0 ? `+${selectedDayData.netCalories}` : selectedDayData.netCalories} kcal
+                    {t.common.net}: {selectedDayData.netCalories > 0 ? `+${selectedDayData.netCalories}` : selectedDayData.netCalories} kcal
                   </Badge>
                 </div>
 
@@ -386,14 +392,14 @@ export default function CalendarPage() {
                 {selectedDayData.entries.length === 0 ? (
                   <div className="py-8 text-center space-y-3">
                     <p className="text-xs sm:text-sm font-medium text-stone-500">
-                      No entries recorded for this date
+                      {t.calendar.noEntriesForDay}
                     </p>
                     <button
                       type="button"
                       onClick={() => setIsQuickAddOpen(true)}
                       className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold transition-all cursor-pointer"
                     >
-                      <Plus className="h-3.5 w-3.5" /> Log for this date
+                      <Plus className="h-3.5 w-3.5" /> {t.calendar.logAnEntry}
                     </button>
                   </div>
                 ) : (

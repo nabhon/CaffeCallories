@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Flame, CalendarDays, Plus } from 'lucide-react'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 interface BottomNavProps {
   onOpenQuickAdd: () => void
@@ -11,6 +12,7 @@ interface BottomNavProps {
 
 export function BottomNav({ onOpenQuickAdd }: BottomNavProps) {
   const pathname = usePathname()
+  const { t } = useLanguage()
   const isToday = pathname === '/'
   const isCalendar = pathname.startsWith('/calendar')
 
@@ -26,7 +28,7 @@ export function BottomNav({ onOpenQuickAdd }: BottomNavProps) {
         }`}
       >
         <Flame className={`h-5 w-5 ${isToday ? 'fill-amber-500/20' : ''}`} />
-        <span className="text-[11px]">Today</span>
+        <span className="text-[11px]">{t.nav.today}</span>
       </Link>
 
       {/* Floating Center Quick Add Action */}
@@ -49,7 +51,7 @@ export function BottomNav({ onOpenQuickAdd }: BottomNavProps) {
         }`}
       >
         <CalendarDays className="h-5 w-5" />
-        <span className="text-[11px]">Calendar</span>
+        <span className="text-[11px]">{t.nav.calendar}</span>
       </Link>
     </nav>
   )

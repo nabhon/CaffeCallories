@@ -11,9 +11,11 @@ import { Sparkles, User, Activity, Target, ArrowRight, Loader2, Check } from 'lu
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -173,14 +175,14 @@ export default function OnboardingPage() {
                 />
               </Link>
               <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5 text-xs py-0.5">
-                Personalized Setup
+                {t.onboarding.badge}
               </Badge>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Set Your Calorie Target
+              {t.onboarding.title}
             </h1>
             <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 max-w-xl">
-              We use the Mifflin-St Jeor formula to calculate your basal metabolic rate and daily calorie goal.
+              {t.onboarding.subtitle}
             </p>
           </div>
         </div>
@@ -199,11 +201,11 @@ export default function OnboardingPage() {
               {/* Name */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5 text-stone-400" /> Your Name
+                  <User className="h-3.5 w-3.5 text-stone-400" /> {t.settings.displayName}
                 </label>
                 <Input
                   type="text"
-                  placeholder="e.g., Alex"
+                  placeholder={t.settings.displayNamePlaceholder}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="h-11 rounded-xl bg-stone-50/50 dark:bg-stone-900/50 border-stone-200 dark:border-stone-800"
@@ -213,7 +215,7 @@ export default function OnboardingPage() {
               {/* Gender Selector */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                  Biological Sex (for metabolic rate calculation)
+                  {t.settings.biologicalSex}
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
@@ -225,7 +227,7 @@ export default function OnboardingPage() {
                         : 'border-stone-200 dark:border-stone-800 bg-card text-stone-600 dark:text-stone-400 hover:border-stone-300'
                     }`}
                   >
-                    {gender === 'male' && <Check className="h-4 w-4" />} Male
+                    {gender === 'male' && <Check className="h-4 w-4" />} {t.settings.male}
                   </button>
                   <button
                     type="button"
@@ -236,7 +238,7 @@ export default function OnboardingPage() {
                         : 'border-stone-200 dark:border-stone-800 bg-card text-stone-600 dark:text-stone-400 hover:border-stone-300'
                     }`}
                   >
-                    {gender === 'female' && <Check className="h-4 w-4" />} Female
+                    {gender === 'female' && <Check className="h-4 w-4" />} {t.settings.female}
                   </button>
                 </div>
               </div>
@@ -244,7 +246,7 @@ export default function OnboardingPage() {
               {/* Age, Height, Weight Grid */}
               <div className="grid grid-cols-3 gap-2.5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Age</label>
+                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">{t.settings.age}</label>
                   <Input
                     type="number"
                     min={12}
@@ -255,7 +257,7 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Height (cm)</label>
+                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">{t.settings.height}</label>
                   <Input
                     type="number"
                     min={100}
@@ -266,7 +268,7 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">Weight (kg)</label>
+                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">{t.settings.weight}</label>
                   <Input
                     type="number"
                     min={30}
@@ -281,14 +283,14 @@ export default function OnboardingPage() {
               {/* Activity Level */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5 text-stone-400" /> Activity Level
+                  <Activity className="h-3.5 w-3.5 text-stone-400" /> {t.settings.activityLevel}
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {[
-                    { id: 'sedentary', label: 'Sedentary', desc: 'Desk job, little to no exercise' },
-                    { id: 'light', label: 'Lightly Active', desc: '1–3 workouts per week' },
-                    { id: 'moderate', label: 'Moderately Active', desc: '3–5 workouts per week' },
-                    { id: 'active', label: 'Very Active', desc: '6–7 vigorous workouts per week' },
+                    { id: 'sedentary', label: t.settings.activityLevels.sedentary.label, desc: t.settings.activityLevels.sedentary.desc },
+                    { id: 'light', label: t.settings.activityLevels.light.label, desc: t.settings.activityLevels.light.desc },
+                    { id: 'moderate', label: t.settings.activityLevels.moderate.label, desc: t.settings.activityLevels.moderate.desc },
+                    { id: 'active', label: t.settings.activityLevels.active.label, desc: t.settings.activityLevels.active.desc },
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -313,13 +315,13 @@ export default function OnboardingPage() {
               {/* Fitness Goal */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-                  <Target className="h-3.5 w-3.5 text-stone-400" /> Primary Goal
+                  <Target className="h-3.5 w-3.5 text-stone-400" /> {t.settings.fitnessGoal}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { id: 'cut', label: 'Lose Fat', desc: '-400 kcal' },
-                    { id: 'maintain', label: 'Maintain', desc: 'Balanced' },
-                    { id: 'bulk', label: 'Gain Muscle', desc: '+350 kcal' },
+                    { id: 'cut', label: t.settings.fitnessGoals.cut.label, desc: t.settings.fitnessGoals.cut.desc },
+                    { id: 'maintain', label: t.settings.fitnessGoals.maintain.label, desc: t.settings.fitnessGoals.maintain.desc },
+                    { id: 'bulk', label: t.settings.fitnessGoals.bulk.label, desc: t.settings.fitnessGoals.bulk.desc },
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -346,7 +348,7 @@ export default function OnboardingPage() {
             <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/90 dark:bg-stone-900/90 p-5 sm:p-6 space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-amber-500" /> Recommended Target
+                  <Sparkles className="h-4 w-4 text-amber-500" /> {t.onboarding.recommendedTarget}
                 </span>
                 <span className="text-xs text-stone-400 font-mono">BMR: {calculation.bmr} kcal</span>
               </div>
@@ -361,15 +363,15 @@ export default function OnboardingPage() {
               {/* Macro Split Pills */}
               <div className="grid grid-cols-3 gap-2 pt-1">
                 <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-2.5 text-center">
-                  <div className="text-[10px] font-semibold text-red-600 dark:text-red-400">PROTEIN</div>
+                  <div className="text-[10px] font-semibold text-red-600 dark:text-red-400">{t.common.protein}</div>
                   <div className="text-sm font-bold text-red-700 dark:text-red-300">{calculation.targetProteinG}g</div>
                 </div>
                 <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-2.5 text-center">
-                  <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">CARBS</div>
+                  <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">{t.common.carbs}</div>
                   <div className="text-sm font-bold text-blue-700 dark:text-blue-300">{calculation.targetCarbsG}g</div>
                 </div>
                 <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 p-2.5 text-center">
-                  <div className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">FAT</div>
+                  <div className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">{t.common.fat}</div>
                   <div className="text-sm font-bold text-orange-700 dark:text-orange-300">{calculation.targetFatG}g</div>
                 </div>
               </div>
@@ -384,11 +386,11 @@ export default function OnboardingPage() {
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" /> Saving Target...
+                  <Loader2 className="h-5 w-5 animate-spin" /> {t.onboarding.savingTarget}
                 </>
               ) : (
                 <>
-                  Save & Start Tracking <ArrowRight className="h-5 w-5" />
+                  {t.onboarding.saveAndStart} <ArrowRight className="h-5 w-5" />
                 </>
               )}
             </Button>

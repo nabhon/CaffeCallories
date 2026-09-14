@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Kanit } from "next/font/google";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -35,6 +36,7 @@ export const viewport: Viewport = {
   ],
 };
 
+
 export default function RootLayout({
   children,
 }: {
@@ -46,7 +48,7 @@ export default function RootLayout({
       className={`${kanit.variable} h-full antialiased font-sans`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased selection:bg-amber-500/20 selection:text-amber-900">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

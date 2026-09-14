@@ -15,6 +15,7 @@ import { Sparkles, ArrowUpRight, Loader2, Check, AlertTriangle, Dumbbell, Utensi
 import { createClient } from '@/lib/supabase/client'
 import type { ParsedEntryResult } from '@/app/api/ai/parse/route'
 import type { Entry } from '@/types/database'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 interface QuickAddDrawerProps {
   isOpen: boolean
@@ -23,19 +24,13 @@ interface QuickAddDrawerProps {
   onEntryAdded: (newEntry: Entry) => void
 }
 
-const SAMPLE_PROMPTS = [
-  'กินข้าวมันไก่',
-  'วิ่ง 5 กม. เบิร์น 300 แคล',
-  'I ate mac and cheese',
-  'ชาเขียวปั่นหวานน้อย',
-]
-
 export function QuickAddDrawer({
   isOpen,
   onOpenChange,
   userId,
   onEntryAdded,
 }: QuickAddDrawerProps) {
+  const { language, t } = useLanguage()
   const [prompt, setPrompt] = useState('')
   const [parsing, setParsing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -72,13 +67,13 @@ export function QuickAddDrawer({
 
   const handleEnableManual = () => {
     setDraft({
-      name: prompt.trim() || 'Food or Workout',
+      name: prompt.trim() || t.quickAdd.foodOrWorkout,
       entry_type: 'intake',
       calories: 350,
       protein_g: 15,
       carbs_g: 45,
       fat_g: 12,
-      confidence_note: 'Manual entry',
+      confidence_note: t.quickAdd.manualEntry,
     })
     setManualMode(true)
     setErrorStatus(null)
@@ -143,15 +138,15 @@ export function QuickAddDrawer({
         <DrawerHeader className="p-0 text-left space-y-1">
           <div className="flex items-center justify-between">
             <DrawerTitle className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-              Log Meal or Workout
+              {t.quickAdd.title}
               <Sparkles className="h-4 w-4 text-amber-500" />
             </DrawerTitle>
             <Badge variant="outline" className="text-[10px] text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/5">
-              Gemini 3.5 AI
+              {t.quickAdd.aiBadge}
             </Badge>
           </div>
           <DrawerDescription className="text-xs text-stone-500 dark:text-stone-400">
-            Type naturally in Thai or English (e.g. &quot;ข้าวมันไก่&quot; or &quot;ran 5km, burned 300 kcal&quot;).
+            {t.quickAdd.description}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -161,7 +156,7 @@ export function QuickAddDrawer({
             <div className="flex gap-2">
               <Input
                 type="text"
-                placeholder="What did you eat or do?"
+                placeholder={t.quickAdd.placeholder}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyDown={(e) => {
@@ -190,9 +185,9 @@ export function QuickAddDrawer({
 
             {/* Quick Suggestion Chips */}
             <div className="space-y-1.5 pt-1">
-              <span className="text-[11px] font-medium text-stone-400">Quick suggestions:</span>
+              <span className="text-[11px] font-medium text-stone-400">{t.quickAdd.quickSuggestions}</span>
               <div className="flex flex-wrap gap-1.5">
-                {SAMPLE_PROMPTS.map((sample) => (
+                {t.quickAdd.samplePrompts.map((sample) => (
                   <button
                     key={sample}
                     type="button"
@@ -220,7 +215,7 @@ export function QuickAddDrawer({
                   onClick={handleEnableManual}
                   className="text-[11px] text-amber-600 dark:text-amber-400 underline underline-offset-2 hover:text-amber-700 cursor-pointer"
                 >
-                  Enter details manually
+                  {t.quickAdd.enterDetailsManually}
                 </button>
               </div>
             )}
@@ -249,11 +244,11 @@ export function QuickAddDrawer({
                   >
                     {draft.entry_type === 'intake' ? (
                       <>
-                        <Utensils className="h-3 w-3" /> Food Intake
+                        <Utensils className="h-3 w-3" /> {t.quickAdd.entryTypeIntake}
                       </>
                     ) : (
                       <>
-                        <Dumbbell className="h-3 w-3" /> Workout Burn
+                        <Dumbbell className="h-3 w-3" /> {t.quickAdd.entryTypeBurn}
                       </>
                     )}
                   </button>
@@ -266,14 +261,14 @@ export function QuickAddDrawer({
                   }}
                   className="text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
                 >
-                  Edit prompt
+                  {language === 'th' ? 'แก้ไขข้อความ' : 'Edit prompt'}
                 </button>
               </div>
 
               {/* Item Name */}
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                  Item Name
+                  {language === 'th' ? 'ชื่อรายการ' : 'Item Name'}
                 </label>
                 <Input
                   type="text"
@@ -287,7 +282,7 @@ export function QuickAddDrawer({
               <div className="grid grid-cols-4 gap-2">
                 <div className="space-y-1 col-span-1">
                   <label className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                    Calories
+                    {t.quickAdd.caloriesLabel}
                   </label>
                   <Input
                     type="number"
@@ -309,7 +304,7 @@ export function QuickAddDrawer({
                   <>
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-red-600 dark:text-red-400">
-                        Protein (g)
+                        {t.quickAdd.proteinLabel}
                       </label>
                       <Input
                         type="number"
@@ -322,7 +317,7 @@ export function QuickAddDrawer({
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
-                        Carbs (g)
+                        {t.quickAdd.carbsLabel}
                       </label>
                       <Input
                         type="number"
@@ -335,7 +330,7 @@ export function QuickAddDrawer({
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">
-                        Fat (g)
+                        {t.quickAdd.fatLabel}
                       </label>
                       <Input
                         type="number"
@@ -349,7 +344,7 @@ export function QuickAddDrawer({
                   </>
                 ) : (
                   <div className="col-span-3 flex items-center justify-center text-xs text-stone-400 italic">
-                    Calorie burn deduction
+                    {language === 'th' ? 'หักลบแคลอรีที่เผาผลาญ' : 'Calorie burn deduction'}
                   </div>
                 )}
               </div>
@@ -370,7 +365,7 @@ export function QuickAddDrawer({
                 disabled={saving}
                 className="h-12 flex-1 rounded-xl cursor-pointer"
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button
                 type="button"
@@ -379,10 +374,12 @@ export function QuickAddDrawer({
                 className="h-12 flex-[2] rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-md shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2 active:scale-95"
               >
                 {saving ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" /> {t.quickAdd.savingEntry}
+                  </>
                 ) : (
                   <>
-                    <Check className="h-5 w-5" /> Confirm & Save
+                    <Check className="h-5 w-5" /> {t.quickAdd.saveToLog}
                   </>
                 )}
               </Button>

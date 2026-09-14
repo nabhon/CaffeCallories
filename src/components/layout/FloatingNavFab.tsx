@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Plus, Flame, CalendarDays, X, Sparkles } from 'lucide-react'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 interface FloatingNavFabProps {
   onOpenQuickAdd: () => void
@@ -12,6 +13,7 @@ interface FloatingNavFabProps {
 export function FloatingNavFab({ onOpenQuickAdd }: FloatingNavFabProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const { t } = useLanguage()
   const isToday = pathname === '/'
   const isCalendar = pathname.startsWith('/calendar')
 
@@ -23,7 +25,7 @@ export function FloatingNavFab({ onOpenQuickAdd }: FloatingNavFabProps) {
           {/* Option 1: Quick Add Log */}
           <div className="flex items-center gap-2.5">
             <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-stone-900/90 text-stone-100 shadow-md backdrop-blur-xs select-none">
-              Log Meal / Workout
+              {t.nav.logMealWorkout}
             </span>
             <button
               type="button"
@@ -41,7 +43,7 @@ export function FloatingNavFab({ onOpenQuickAdd }: FloatingNavFabProps) {
           {/* Option 2: Today Dashboard */}
           <div className="flex items-center gap-2.5">
             <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-stone-900/90 text-stone-100 shadow-md backdrop-blur-xs select-none">
-              Today Dashboard
+              {t.nav.todayDashboard}
             </span>
             <Link
               href="/"
@@ -60,7 +62,7 @@ export function FloatingNavFab({ onOpenQuickAdd }: FloatingNavFabProps) {
           {/* Option 3: Calendar History */}
           <div className="flex items-center gap-2.5">
             <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-stone-900/90 text-stone-100 shadow-md backdrop-blur-xs select-none">
-              Calendar History
+              {t.nav.calendarHistory}
             </span>
             <Link
               href="/calendar"

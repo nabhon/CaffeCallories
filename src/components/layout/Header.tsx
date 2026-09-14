@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Settings, User, Globe } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,37 +14,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { createClient } from '@/lib/supabase/client'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 interface HeaderProps {
   userEmail?: string | null
   userName?: string | null
 }
 
-const HEALTH_MESSAGES = [
-  'Ready to burn some calories?',
-  'Fuel your body, nourish your mind.',
-  'Every healthy choice counts today.',
-  'Stay active, stay energized!',
-  'Stay hydrated and keep moving!',
-  'Small daily habits lead to big progress.',
-  'Ready to crush your nutrition goals?',
-  'Consistency is your superpower.',
-  'Listen to your body and feel great.',
-  'Make today another healthy step forward!',
-]
-
 export function Header({ userEmail, userName }: HeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const [healthMessage, setHealthMessage] = useState<string>(HEALTH_MESSAGES[0])
+  const { language, toggleLanguage, t } = useLanguage()
+  const [messageIndex, setMessageIndex] = useState<number>(0)
 
   useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * HEALTH_MESSAGES.length)
-    const timer = setTimeout(() => {
-      setHealthMessage(HEALTH_MESSAGES[randomIndex])
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [])
+    const list = t.header.healthMessages
+    if (list && list.length > 0) {
+      const timer = setTimeout(() => {
+        setMessageIndex(Math.floor(Math.random() * list.length))
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+  }, [t.header.healthMessages])
 
   const handleSignOut = async () => {
     try {
@@ -58,7 +49,8 @@ export function Header({ userEmail, userName }: HeaderProps) {
   }
 
   // Display name fallback
-  const displayName = userName || (userEmail ? userEmail.split('@')[0] : 'there')
+  const displayName = userName || (userEmail ? userEmail.split('@')[0] : t.header.userFallback)
+  const healthMessage = t.header.healthMessages[messageIndex] || t.header.healthMessages[0]
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/85 backdrop-blur-md border-b border-stone-200/60 dark:border-stone-800/60">
@@ -81,7 +73,7 @@ export function Header({ userEmail, userName }: HeaderProps) {
           </Link>
           <div className="flex flex-col min-w-0">
             <h1 className="font-bold text-base sm:text-lg tracking-tight text-stone-900 dark:text-stone-100 truncate">
-              Welcome ! {displayName}
+              {language === 'th' ? `ยินดีต้อนรับคุณ ${displayName}` : `${t.header.welcome} ${displayName}`}
             </h1>
             <p className="text-xs font-medium text-stone-500 dark:text-stone-400 truncate">
               {healthMessage}
@@ -99,7 +91,7 @@ export function Header({ userEmail, userName }: HeaderProps) {
                 : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
             }`}
           >
-            Today
+            {t.nav.today}
           </Link>
           <Link
             href="/calendar"
@@ -109,7 +101,7 @@ export function Header({ userEmail, userName }: HeaderProps) {
                 : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
             }`}
           >
-            Calendar
+            {t.nav.calendar}
           </Link>
         </nav>
 
@@ -123,32 +115,49 @@ export function Header({ userEmail, userName }: HeaderProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 rounded-2xl p-2 bg-card border border-stone-200/80 dark:border-stone-800/80 shadow-2xl transition-all duration-200 animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
+            className="w-60 rounded-2xl p-2 bg-card border border-stone-200/80 dark:border-stone-800/80 shadow-2xl transition-all duration-200 animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
           >
             <DropdownMenuLabel className="font-normal px-2.5 py-2">
               <div className="flex flex-col space-y-0.5">
                 <p className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
-                  {userName || 'User'}
+                  {displayName}
                 </p>
                 <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
-                  {userEmail || 'My Account'}
+                  {userEmail || (language === 'th' ? 'บัญชีผู้ใช้งาน' : 'My Account')}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="my-1.5" />
+            
+            {/* Adjust Goals & Metrics */}
             <DropdownMenuItem
               onClick={() => router.push('/settings')}
               className="cursor-pointer flex items-center gap-2 text-xs px-2.5 py-2 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
-              <Settings className="h-3.5 w-3.5" /> Adjust Goals & Metrics
+              <Settings className="h-3.5 w-3.5 text-stone-500" /> {t.header.adjustGoals}
             </DropdownMenuItem>
+
+            {/* Language Switcher Button */}
+            <DropdownMenuItem
+              onClick={toggleLanguage}
+              className="cursor-pointer flex items-center justify-between text-xs px-2.5 py-2 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Globe className="h-3.5 w-3.5 text-amber-500" />
+                <span>{t.header.language}</span>
+              </div>
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                {language === 'th' ? 'ไทย' : 'EN'}
+              </span>
+            </DropdownMenuItem>
+
             <DropdownMenuSeparator className="my-1.5" />
             <div className="pt-1">
               <DropdownMenuItem
                 onClick={handleSignOut}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 focus:bg-red-600 text-white focus:text-white font-semibold text-xs transition-all shadow-md shadow-red-500/25 active:scale-95 cursor-pointer [&_svg]:!text-white"
               >
-                <LogOut className="h-4 w-4 !text-white text-white shrink-0" /> Log Out
+                <LogOut className="h-4 w-4 !text-white text-white shrink-0" /> {t.header.logout}
               </DropdownMenuItem>
             </div>
           </DropdownMenuContent>
