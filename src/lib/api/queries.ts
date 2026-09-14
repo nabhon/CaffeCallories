@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import type { Entry, Profile, ProfileSettings } from '@/types/database'
+import type { DayLog, Entry, Profile, ProfileSettings } from '@/types/database'
 import type { User } from '@supabase/supabase-js'
 
 export const queryKeys = {
@@ -10,6 +10,10 @@ export const queryKeys = {
   todayEntries: (userId: string) => ['entries', 'today', userId] as const,
   monthEntries: (userId: string, year: number, month: number) =>
     ['entries', 'month', userId, year, month] as const,
+  monthDayLogs: (userId: string, year: number, month: number) =>
+    ['day_logs', 'month', userId, year, month] as const,
+  dayLog: (userId: string, date: string) =>
+    ['day_logs', 'single', userId, date] as const,
 }
 
 // 1. Current authenticated user session
@@ -154,3 +158,68 @@ export function useMonthEntries(
     staleTime: 60 * 1000,
   })
 }
+
+// 6. Month's day_logs for Calendar
+export function useMonthDayLogs(
+  userId: string | null | undefined,
+  year: number,
+  month: number
+) {
+  return useQuery<DayLog[]>({
+    queryKey: userId
+      ? queryKeys.monthDayLogs(userId, year, month)
+      : ['day_logs', 'month', 'anonymous', year, month],
+    queryFn: async () => {
+      if (!userId) return []
+      const supabase = createClient()
+      const mm = String(month + 1).padStart(2, '0')
+      const startDate = `${year}-${mm}-01`
+      const lastDay = new Date(year, month + 1, 0).getDate()
+      const endDate = `${year}-${mm}-${String(lastDay).padStart(2, '0')}`
+
+      const { data, error } = await supabase
+        .from('day_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching month day_logs:', error)
+        return []
+      }
+      return data || []
+    },
+    enabled: !!userId,
+    staleTime: 60 * 1000,
+  })
+}
+
+// 7. Single day_log query
+export function useDayLog(userId: string | null | undefined, dateStr: string) {
+  return useQuery<DayLog | null>({
+    queryKey: userId
+      ? queryKeys.dayLog(userId, dateStr)
+      : ['day_logs', 'single', 'anonymous', dateStr],
+    queryFn: async () => {
+      if (!userId || !dateStr) return null
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('day_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('date', dateStr)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error fetching day_log:', error)
+        return null
+      }
+      return data
+    },
+    enabled: !!userId && !!dateStr,
+    staleTime: 60 * 1000,
+  })
+}
+

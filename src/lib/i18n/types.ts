@@ -60,6 +60,15 @@ export interface TranslationDictionary {
     noEntriesForDay: string
     logAnEntry: string
     loadingCalendar: string
+    dayGoal: string
+    daySumTotal: string
+    onTarget: string
+    overBudget: string
+    underEating: string
+    editDayGoal: string
+    saveDayGoal: string
+    cancel: string
+    goalForDate: string
   }
   quickAdd: {
     title: string
