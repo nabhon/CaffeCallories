@@ -13,7 +13,7 @@
 | 2026-09-14 | Data Privacy | Row Level Security (RLS) | Strictly enforces multi-tenant data isolation per user. |
 | 2026-09-14 | Architecture | Approach A: Next.js Hybrid App Router | Clean separation of SSR auth, client-side mobile shell, and server AI endpoint. |
 | 2026-09-14 | Data Model | Split `profiles` and `profile_settings` | Decouples personal identity and body metrics from dynamic daily targets. |
-| 2026-09-14 | Entry Parsing | Gemini 2.5 Flash via `/api/ai/parse` | Fast, structured JSON schema outputs; protects API secrets on server. |
+| 2026-09-14 | Entry Parsing | Gemini 2.5 Flash-Lite via `/api/ai/parse` | Ultra low-cost, ultra low-latency (<600ms), structured JSON schema outputs; protects API secrets on server. |
 | 2026-09-14 | Calorie Logic | Explicit user input takes priority | If user specifies calories, use them directly; otherwise, estimate realistically. Supports intake (+) and burn (-). |
 | 2026-09-14 | AI Failure Behavior | Subtle error banner + discreet manual option | Informs user service is temporarily unavailable without forcing manual entry. |
 | 2026-09-14 | User Goals | Onboarding questionnaire (TDEE calculation) | Automatically calculates daily calories and macro targets on first login. |
@@ -99,7 +99,7 @@ create policy "Users can view and manage their own entries"
 
 - **Method**: `POST`
 - **Authentication**: Bearer JWT / Supabase Auth session cookie.
-- **Model**: Google Gemini 2.5 Flash via `@google/genai`.
+- **Model**: Google Gemini 2.5 Flash-Lite (`gemini-2.5-flash-lite`, configurable via `GEMINI_MODEL`) via `@google/genai`.
 - **System Instructions**:
   - Distinguish food consumption (`entry_type: 'intake'`) vs. physical activity (`entry_type: 'burn'`).
   - Honor user-specified calorie values exactly when present.
