@@ -49,25 +49,38 @@ const BURN_KEYWORDS = [
   'football',
   'soccer',
   'basketball',
+  // Thai keywords
+  'วิ่ง',
+  'เดิน',
+  'ปั่นจักรยาน',
+  'ว่ายน้ำ',
+  'ออกกำลังกาย',
+  'เบิร์น',
+  'เผาผลาญ',
+  'ยกเวท',
+  'คาร์ดิโอ',
+  'ฟิตเนส',
+  'เต้น',
+  'กระโดดเชือก',
 ]
 
 /**
  * Intelligent deterministic fallback parser for offline local development
+ * Supports both English and Thai
  */
 function parseWithMockFallback(prompt: string): ParsedEntryResult {
   const lower = prompt.toLowerCase()
 
-  // 1. Detect if exercise / burn
+  // 1. Detect if exercise / burn (English + Thai)
   const isBurn = BURN_KEYWORDS.some((kw) => {
-    const regex = new RegExp(`\\b${kw}\\b`, 'i')
-    return regex.test(lower)
+    return lower.includes(kw.toLowerCase())
   })
 
-  // 2. Extract explicit calories if user provided any
-  // e.g. "160 calories", "160 callolies", "160 kcal", "160 cal", "burned 200", "350kcal"
+  // 2. Extract explicit calories if user provided any (English + Thai)
+  // e.g. "160 calories", "160 callolies", "160 kcal", "160 แคล", "เบิร์น 200", "350kcal"
   const calorieMatch =
-    prompt.match(/(\d+)\s*(?:calories|callolies|calorie|callolie|kcal|cal|burn)/i) ||
-    prompt.match(/(?:burned|burnt|burn|eat|ate)\s*(\d+)/i)
+    prompt.match(/(\d+)\s*(?:calories|callolies|calorie|callolie|kcal|cal|burn|แคลอรี่|แคลอรี|กิโลแคลอรี่|กิโลแคล|แคล)/i) ||
+    prompt.match(/(?:burned|burnt|burn|eat|ate|เบิร์น|เผาผลาญ|กิน|ทาน|ดื่ม)\s*(\d+)/i)
 
   let extractedCalories: number | null = null
   if (calorieMatch) {
@@ -77,12 +90,12 @@ function parseWithMockFallback(prompt: string): ParsedEntryResult {
     }
   }
 
-  // 3. Clean item name
+  // 3. Clean item name (English + Thai)
   let cleanedName = prompt
-    .replace(/(?:i\s+ate|i\s+had|i\s+drank|i\s+eat|eating|drank|drink|having)\s+/gi, '')
-    .replace(/(?:with|and|burned|burn|burnt)\s+\d+\s*(?:calories|callolies|kcal|cal)?/gi, '')
-    .replace(/\b\d+\s*(?:calories|callolies|kcal|cal|burn)\b/gi, '')
-    .replace(/^(?:ran|run|running|walk|walking|workout)\s+/i, (match) => match)
+    .replace(/(?:i\s+ate|i\s+had|i\s+drank|i\s+eat|eating|drank|drink|having|กิน|ทาน|ดื่ม|สั่ง|หม่ำ)\s*/gi, '')
+    .replace(/(?:with|and|burned|burn|burnt|เบิร์นไป|เผาผลาญไป|เบิร์น|เผาผลาญ)\s*\d+\s*(?:calories|callolies|kcal|cal|แคลอรี่|แคลอรี|แคล)?/gi, '')
+    .replace(/\b\d+\s*(?:calories|callolies|kcal|cal|burn|แคลอรี่|แคลอรี|แคล)\b/gi, '')
+    .replace(/^(?:ran|run|running|walk|walking|workout|วิ่ง|เดิน|ออกกำลังกาย)\s*/i, (match) => match)
     .trim()
 
   // Capitalize first letter
@@ -171,28 +184,32 @@ export async function POST(request: Request) {
     try {
       const ai = new GoogleGenAI({ apiKey })
 
-      const systemInstruction = `You are a precise nutritional and fitness parser for an app named Caffecallories.
-Your goal is to parse arbitrary user text (e.g. "I ate mac and cheese", "running with 160 callolies burn", "had 2 eggs and iced latte") into a structured JSON log entry.
+      const systemInstruction = `You are a precise bilingual (English & Thai / ภาษาไทย) nutritional and fitness parser for an app named Caffecallories.
+Your goal is to parse arbitrary user text in English, Thai, or a natural mix of both (e.g. "I ate mac and cheese", "running with 160 callolies burn", "กินข้าวมันไก่", "กะเพราหมูกรอบไข่ดาว 650 แคล", "วิ่ง 5 กม. เบิร์น 300 kcal", "ชาเขียวปั่นหวานน้อย") into a structured JSON log entry.
 
 RULES:
-1. Classification:
-   - "intake": Eating, drinking, snacking, meal.
-   - "burn": Running, swimming, walking, gym, workout, sports, calorie burn.
+1. Language Support (English & Thai):
+   - Flawlessly understand Thai food (e.g. ข้าวมันไก่, ผัดกะเพรา, ส้มตำ, ต้มยำ, ข้าวเหนียวหมูปิ้ง, ชาไทย, ลาเต้, ก๋วยเตี๋ยว) and Thai fitness/workout activities (e.g. วิ่ง, ว่ายน้ำ, ปั่นจักรยาน, เดิน, เวท, ฟิตเนส, คาร์ดิโอ).
+   - If the user writes in Thai, output the "name" in natural, clean Thai (e.g. "ข้าวมันไก่", "วิ่ง 5 กิโลเมตร"). If the user writes in English, output in English.
 
-2. Calorie Number:
-   - If the user explicitly specifies a calorie count (e.g., "running with 160 callolies burn", "pizza 450 kcal"), YOU MUST USE THAT EXACT NUMBER.
+2. Classification:
+   - "intake": Eating, drinking, snacking, meal (e.g. กิน, ทาน, ดื่ม).
+   - "burn": Running, swimming, cycling, gym, workout, sports, calorie burn (e.g. วิ่ง, ว่ายน้ำ, ปั่นจักรยาน, ออกกำลังกาย, เบิร์น, เผาผลาญ).
+
+3. Calorie Number:
+   - If the user explicitly specifies a calorie count in English or Thai (e.g. "160 calories", "160 callolies", "650 แคล", "เบิร์น 300 kcal"), YOU MUST USE THAT EXACT NUMBER.
    - For "burn", calories MUST be a NEGATIVE integer (e.g. -160, -300).
-   - For "intake", calories MUST be a POSITIVE integer (e.g. 450, 220).
-   - If calories are not specified by user, estimate realistic average single-serving calories.
+   - For "intake", calories MUST be a POSITIVE integer (e.g. 450, 650).
+   - If calories are not specified by the user, estimate realistic average single-serving calories based on Thai or international standard nutritional data.
 
-3. Macronutrients:
+4. Macronutrients:
    - For "intake", estimate protein_g, carbs_g, and fat_g in grams realistically.
    - For "burn", protein_g, carbs_g, and fat_g MUST be 0.
 
-4. Name:
-   - Concise title-cased item name (e.g. "Mac and Cheese", "Outdoor Running", "Iced Latte").
+5. Name:
+   - Concise, title-cased item name in the user's primary language.
 
-5. JSON Schema:
+6. JSON Schema:
    Return strictly valid JSON with this exact structure:
    {
      "name": string,

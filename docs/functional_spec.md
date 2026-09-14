@@ -101,8 +101,9 @@ create policy "Users can view and manage their own entries"
 - **Authentication**: Bearer JWT / Supabase Auth session cookie.
 - **Model**: Google Gemini 2.5 Flash-Lite (`gemini-2.5-flash-lite`, configurable via `GEMINI_MODEL`) via `@google/genai`.
 - **System Instructions**:
+  - **Bilingual Support**: Fully supports English, Thai (ภาษาไทย), and mixed inputs (e.g. "ข้าวมันไก่", "กะเพราหมูกรอบ 650 แคล", "วิ่ง 5 กม. เบิร์น 300 kcal").
   - Distinguish food consumption (`entry_type: 'intake'`) vs. physical activity (`entry_type: 'burn'`).
-  - Honor user-specified calorie values exactly when present.
+  - Honor user-specified calorie values (in English or Thai terms like แคล / แคลอรี่) exactly when present.
   - Return negative calories for exercise burn, positive for food intake.
   - Extract/estimate `protein_g`, `carbs_g`, and `fat_g` for food items. Set macros to `0` for exercise.
 - **Output JSON Schema**:
