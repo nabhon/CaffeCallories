@@ -1,9 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Flame, Sparkles, LogOut, Settings } from 'lucide-react'
+import { LogOut, Settings } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,9 +19,31 @@ interface HeaderProps {
   userName?: string | null
 }
 
+const HEALTH_MESSAGES = [
+  'Ready to burn some calories?',
+  'Fuel your body, nourish your mind.',
+  'Every healthy choice counts today.',
+  'Stay active, stay energized!',
+  'Stay hydrated and keep moving!',
+  'Small daily habits lead to big progress.',
+  'Ready to crush your nutrition goals?',
+  'Consistency is your superpower.',
+  'Listen to your body and feel great.',
+  'Make today another healthy step forward!',
+]
+
 export function Header({ userEmail, userName }: HeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const [healthMessage, setHealthMessage] = useState<string>(HEALTH_MESSAGES[0])
+
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * HEALTH_MESSAGES.length)
+    const timer = setTimeout(() => {
+      setHealthMessage(HEALTH_MESSAGES[randomIndex])
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleSignOut = async () => {
     try {
@@ -34,40 +56,28 @@ export function Header({ userEmail, userName }: HeaderProps) {
     }
   }
 
-  // Format today's date
-  const todayFormatted = new Date().toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
+  // Display name fallback
+  const displayName = userName || (userEmail ? userEmail.split('@')[0] : 'there')
 
   // Initials for avatar
   const initials = userName
     ? userName.substring(0, 2).toUpperCase()
     : userEmail
     ? userEmail.substring(0, 2).toUpperCase()
-    : 'CC'
+    : 'U'
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/85 backdrop-blur-md border-b border-stone-200/60 dark:border-stone-800/60">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
-        {/* Brand & Date */}
-        <div className="flex items-center gap-2.5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-xs">
-          <Flame className="h-5 w-5" />
+        {/* Welcome Greeting & Randomized Health Text */}
+        <div className="flex flex-col min-w-0 pr-2">
+          <h1 className="font-bold text-base sm:text-lg tracking-tight text-stone-900 dark:text-stone-100 truncate">
+            Welcome ! {displayName}
+          </h1>
+          <p className="text-xs font-medium text-stone-500 dark:text-stone-400 truncate">
+            {healthMessage}
+          </p>
         </div>
-        <div>
-          <div className="flex items-center gap-1">
-            <span className="font-bold text-base tracking-tight text-stone-900 dark:text-stone-100">
-              Caffecallories
-            </span>
-            <Sparkles className="h-3 w-3 text-amber-500" />
-          </div>
-          <div className="text-[11px] font-medium text-stone-500 dark:text-stone-400">
-            {todayFormatted}
-          </div>
-        </div>
-      </div>
 
       {/* Desktop Navigation Links */}
       <nav className="hidden md:flex items-center gap-1 bg-stone-100 dark:bg-stone-900 p-1 rounded-xl border border-stone-200/60 dark:border-stone-800/60">
