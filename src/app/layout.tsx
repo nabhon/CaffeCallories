@@ -10,8 +10,18 @@ const kanit = Kanit({
 });
 
 export const metadata: Metadata = {
-  title: "Caffecallories",
-  description: "Track calories and coffee drinks with Caffecallories",
+  title: {
+    default: "Today Callories",
+    template: "%s",
+  },
+  description: "Track daily calories, macros, and fitness goals with ease.",
+  icons: {
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export const viewport: Viewport = {

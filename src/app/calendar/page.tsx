@@ -44,6 +44,7 @@ export default function CalendarPage() {
 
   // Load user session and month's entries
   useEffect(() => {
+    document.title = 'Calendar Callories'
     let ignore = false
 
     async function loadData() {

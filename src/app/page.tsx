@@ -33,6 +33,7 @@ export default function TodayDashboardPage() {
 
   // Fetch initial user, settings, and today's logs on mount
   useEffect(() => {
+    document.title = 'Today Callories'
     let ignore = false
 
     async function loadData() {
