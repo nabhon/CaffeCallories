@@ -58,11 +58,11 @@ All colors are expressed through CSS variables and Tailwind utility tokens.
 
 | Category | Color | Token | Accent / Badge Tint |
 | :--- | :--- | :--- | :--- |
-| **Calorie Intake (+)** | Warm Emerald / Amber | `#10B981` (`emerald-500`) | `bg-emerald-500/10 text-emerald-600 dark:text-emerald-400` |
-| **Calorie Burn (-)** | Energetic Orange / Cyan | `#F97316` (`orange-500`) | `bg-orange-500/10 text-orange-600 dark:text-orange-400` |
-| **Protein** | Sapphire Sky | `#0EA5E9` (`sky-500`) | `bg-sky-500/10 text-sky-600 dark:text-sky-400` |
-| **Carbohydrates** | Harvest Amber | `#F59E0B` (`amber-500`) | `bg-amber-500/10 text-amber-600 dark:text-amber-400` |
-| **Fats** | Rose Coral | `#F43F5E` (`rose-500`) | `bg-rose-500/10 text-rose-600 dark:text-rose-400` |
+| **Calorie Intake / (+) Sum** | Vibrant Emerald / Green | `#10B981` (`emerald-500`) | `bg-emerald-500/10 text-emerald-600 dark:text-emerald-400` |
+| **Calorie Burn / (-) Sum** | Energetic Red / Coral | `#EF4444` (`red-500`) | `bg-red-500/10 text-red-600 dark:text-red-400` |
+| **Protein** | Crimson Red | `#EF4444` (`red-500`) | `bg-red-500 text-red-600 dark:text-red-400` |
+| **Carbohydrates** | Ocean Blue | `#3B82F6` (`blue-500`) | `bg-blue-500 text-blue-600 dark:text-blue-400` |
+| **Fats** | Vivid Orange | `#F97316` (`orange-500`) | `bg-orange-500 text-orange-600 dark:text-orange-400` |
 
 ---
 

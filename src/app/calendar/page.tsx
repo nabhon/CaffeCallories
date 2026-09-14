@@ -288,6 +288,8 @@ export default function CalendarPage() {
                     const isToday = item.dateKey === todayKey
                     const dayData = entriesByDate[item.dateKey]
                     const hasEntries = dayData && dayData.entries.length > 0
+                    const isPositive = hasEntries && dayData.netCalories > 0
+                    const isNegative = hasEntries && dayData.netCalories < 0
 
                     return (
                       <button
@@ -296,14 +298,34 @@ export default function CalendarPage() {
                         onClick={() => setSelectedDate(item.date!)}
                         className={`h-14 sm:h-16 md:h-18 rounded-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 transition-all cursor-pointer text-center relative ${
                           isSelected
-                            ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25 font-bold ring-2 ring-amber-500/40'
+                            ? isPositive
+                              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold ring-2 ring-emerald-500/50'
+                              : isNegative
+                              ? 'bg-red-600 text-white shadow-md shadow-red-600/25 font-bold ring-2 ring-red-500/50'
+                              : 'bg-amber-500 text-white shadow-md shadow-amber-500/25 font-bold ring-2 ring-amber-500/40'
+                            : isPositive
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20'
+                            : isNegative
+                            ? 'bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/30 hover:bg-red-500/20'
                             : isToday
                             ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/40 font-semibold'
                             : 'hover:bg-stone-200/60 dark:hover:bg-stone-800/60 text-stone-700 dark:text-stone-300'
                         }`}
                       >
                         {/* Day Number */}
-                        <span className="text-xs sm:text-sm font-semibold">{item.date.getDate()}</span>
+                        <span
+                          className={`text-xs sm:text-sm font-semibold ${
+                            isSelected
+                              ? 'text-white'
+                              : isPositive
+                              ? 'text-emerald-700 dark:text-emerald-300 font-bold'
+                              : isNegative
+                              ? 'text-red-700 dark:text-red-300 font-bold'
+                              : ''
+                          }`}
+                        >
+                          {item.date.getDate()}
+                        </span>
 
                         {/* Net Calorie Badge */}
                         {hasEntries ? (
@@ -312,9 +334,9 @@ export default function CalendarPage() {
                               className={`text-[9px] sm:text-[10px] md:text-xs font-bold tracking-tight px-1 py-0.5 rounded-md leading-tight truncate max-w-full ${
                                 isSelected
                                   ? 'text-white/95 bg-white/20'
-                                  : dayData.netCalories < 0
-                                  ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10'
-                                  : 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
+                                  : isNegative
+                                  ? 'text-red-700 dark:text-red-300 bg-red-500/20'
+                                  : 'text-emerald-700 dark:text-emerald-300 bg-emerald-500/20'
                               }`}
                             >
                               {dayData.netCalories > 0 ? `+${dayData.netCalories}` : dayData.netCalories}
@@ -340,9 +362,9 @@ export default function CalendarPage() {
                       {selectedDateFormatted}
                     </h2>
                     <div className="flex items-center gap-2 text-xs text-stone-400">
-                      <span>Food: +{selectedDayData.totalIntake} kcal</span>
+                      <span>Intake: {selectedDayData.totalIntake} kcal</span>
                       <span>•</span>
-                      <span>Burn: -{selectedDayData.totalBurn} kcal</span>
+                      <span>Burn: {selectedDayData.totalBurn} kcal</span>
                     </div>
                   </div>
 
@@ -351,7 +373,7 @@ export default function CalendarPage() {
                     variant="outline"
                     className={`text-xs font-bold px-2.5 py-1 ${
                       selectedDayData.netCalories < 0
-                        ? 'border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-500/5'
+                        ? 'border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/5'
                         : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5'
                     }`}
                   >
@@ -421,7 +443,7 @@ export default function CalendarPage() {
                                   : 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
                               }`}
                             >
-                              {isBurn ? `-${Math.abs(entry.calories)}` : `+${entry.calories}`}
+                              {Math.abs(entry.calories)} kcal
                             </span>
 
                             <button

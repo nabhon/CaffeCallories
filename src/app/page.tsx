@@ -250,18 +250,18 @@ export default function TodayDashboardPage() {
                 </div>
                 <div className="text-center border-x border-stone-200/60 dark:border-stone-800/60">
                   <div className="text-[10px] uppercase font-semibold text-emerald-600 dark:text-emerald-400">
-                    Food (+)
+                    Intake
                   </div>
                   <div className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                    +{metrics.totalIntake.toLocaleString()}
+                    {metrics.totalIntake.toLocaleString()}
                   </div>
                 </div>
                 <div className="text-center">
                   <div className="text-[10px] uppercase font-semibold text-orange-600 dark:text-orange-400">
-                    Burn (-)
+                    Burn
                   </div>
                   <div className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400">
-                    -{metrics.totalBurn.toLocaleString()}
+                    {metrics.totalBurn.toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -277,11 +277,11 @@ export default function TodayDashboardPage() {
               </div>
 
               <div className="space-y-3">
-                {/* Protein */}
+                {/* Protein (Red) */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-sky-500" /> Protein
+                    <span className="font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-red-500" /> Protein
                     </span>
                     <span className="text-stone-600 dark:text-stone-400 font-medium">
                       {metrics.totalProtein}g / {metrics.targetProtein}g
@@ -289,7 +289,7 @@ export default function TodayDashboardPage() {
                   </div>
                   <div className="h-2 w-full rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
                     <div
-                      className="h-full bg-sky-500 rounded-full transition-all duration-300"
+                      className="h-full bg-red-500 rounded-full transition-all duration-300"
                       style={{
                         width: `${Math.min(100, Math.round((metrics.totalProtein / metrics.targetProtein) * 100))}%`,
                       }}
@@ -297,11 +297,11 @@ export default function TodayDashboardPage() {
                   </div>
                 </div>
 
-                {/* Carbs */}
+                {/* Carbs (Blue) */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-amber-500" /> Carbs
+                    <span className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-blue-500" /> Carbs
                     </span>
                     <span className="text-stone-600 dark:text-stone-400 font-medium">
                       {metrics.totalCarbs}g / {metrics.targetCarbs}g
@@ -309,7 +309,7 @@ export default function TodayDashboardPage() {
                   </div>
                   <div className="h-2 w-full rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
                     <div
-                      className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                      className="h-full bg-blue-500 rounded-full transition-all duration-300"
                       style={{
                         width: `${Math.min(100, Math.round((metrics.totalCarbs / metrics.targetCarbs) * 100))}%`,
                       }}
@@ -317,11 +317,11 @@ export default function TodayDashboardPage() {
                   </div>
                 </div>
 
-                {/* Fat */}
+                {/* Fat (Orange) */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-rose-500" /> Fat
+                    <span className="font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-orange-500" /> Fat
                     </span>
                     <span className="text-stone-600 dark:text-stone-400 font-medium">
                       {metrics.totalFat}g / {metrics.targetFat}g
@@ -329,7 +329,7 @@ export default function TodayDashboardPage() {
                   </div>
                   <div className="h-2 w-full rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
                     <div
-                      className="h-full bg-rose-500 rounded-full transition-all duration-300"
+                      className="h-full bg-orange-500 rounded-full transition-all duration-300"
                       style={{
                         width: `${Math.min(100, Math.round((metrics.totalFat / metrics.targetFat) * 100))}%`,
                       }}
@@ -423,7 +423,7 @@ export default function TodayDashboardPage() {
                               : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                           }`}
                         >
-                          {isBurn ? `-${Math.abs(entry.calories)}` : `+${entry.calories}`} kcal
+                          {Math.abs(entry.calories)} kcal
                         </span>
 
                         <button

@@ -308,7 +308,7 @@ export function QuickAddDrawer({
                 {draft.entry_type === 'intake' ? (
                   <>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-sky-600 dark:text-sky-400">
+                      <label className="text-[10px] font-semibold text-red-600 dark:text-red-400">
                         Protein (g)
                       </label>
                       <Input
@@ -321,7 +321,7 @@ export function QuickAddDrawer({
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                      <label className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
                         Carbs (g)
                       </label>
                       <Input
@@ -334,7 +334,7 @@ export function QuickAddDrawer({
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-rose-600 dark:text-rose-400">
+                      <label className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">
                         Fat (g)
                       </label>
                       <Input

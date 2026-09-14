@@ -338,17 +338,17 @@ export default function OnboardingPage() {
 
           {/* Macro Split Pills */}
           <div className="grid grid-cols-3 gap-2 pt-1">
-            <div className="rounded-xl bg-sky-500/10 border border-sky-500/20 p-2 text-center">
-              <div className="text-[10px] font-semibold text-sky-600 dark:text-sky-400">PROTEIN</div>
-              <div className="text-sm font-bold text-sky-700 dark:text-sky-300">{calculation.targetProteinG}g</div>
+            <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-2 text-center">
+              <div className="text-[10px] font-semibold text-red-600 dark:text-red-400">PROTEIN</div>
+              <div className="text-sm font-bold text-red-700 dark:text-red-300">{calculation.targetProteinG}g</div>
             </div>
-            <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-2 text-center">
-              <div className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">CARBS</div>
-              <div className="text-sm font-bold text-amber-700 dark:text-amber-300">{calculation.targetCarbsG}g</div>
+            <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-2 text-center">
+              <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">CARBS</div>
+              <div className="text-sm font-bold text-blue-700 dark:text-blue-300">{calculation.targetCarbsG}g</div>
             </div>
-            <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-2 text-center">
-              <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-400">FAT</div>
-              <div className="text-sm font-bold text-rose-700 dark:text-rose-300">{calculation.targetFatG}g</div>
+            <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 p-2 text-center">
+              <div className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">FAT</div>
+              <div className="text-sm font-bold text-orange-700 dark:text-orange-300">{calculation.targetFatG}g</div>
             </div>
           </div>
         </div>
