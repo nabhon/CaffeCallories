@@ -159,4 +159,13 @@ export const th: TranslationDictionary = {
     saveAndStart: 'บันทึกและเริ่มใช้งาน',
     savingTarget: 'กำลังบันทึก...',
   },
+  auth: {
+    pageTitle: 'เข้าสู่ระบบ - Callories',
+    welcomeTitle: 'ยินดีต้อนรับ',
+    welcomeSubtitle: 'เข้าสู่ระบบด้วยบัญชี Google เพื่อเริ่มบันทึกและจัดการแคลอรีของคุณ',
+    continueWithGoogle: 'เข้าสู่ระบบด้วย Google',
+    connectingGoogle: 'กำลังเชื่อมต่อกับ Google...',
+    authFailed: 'การเข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+    unexpectedError: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง',
+  },
 }

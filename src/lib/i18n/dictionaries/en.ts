@@ -159,4 +159,13 @@ export const en: TranslationDictionary = {
     saveAndStart: 'Save & Start Tracking',
     savingTarget: 'Saving Target...',
   },
+  auth: {
+    pageTitle: 'Sign in - Callories',
+    welcomeTitle: 'Welcome',
+    welcomeSubtitle: 'Sign in with your Google account to access your personal calorie logs.',
+    continueWithGoogle: 'Continue with Google',
+    connectingGoogle: 'Connecting to Google...',
+    authFailed: 'Authentication failed. Please try signing in again.',
+    unexpectedError: 'An unexpected error occurred during sign-in.',
+  },
 }

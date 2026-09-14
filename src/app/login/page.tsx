@@ -1,24 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
+import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
+import { Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Flame, Sparkles } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
+  const { language, toggleLanguage, t } = useLanguage()
+
+  // Dynamic localized page title
+  useEffect(() => {
+    document.title = t.auth.pageTitle
+  }, [t.auth.pageTitle])
 
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true)
       setErrorMessage(null)
       const supabase = createClient()
-      
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -35,43 +42,54 @@ function LoginForm() {
         setLoading(false)
       }
     } catch {
-      setErrorMessage('An unexpected error occurred during sign-in.')
+      setErrorMessage(t.auth.unexpectedError)
       setLoading(false)
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 bg-neutral-50 dark:bg-neutral-950">
-      <div className="w-full max-w-sm space-y-8 text-center">
-        {/* Logo & Branding */}
-        <div className="flex flex-col items-center space-y-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-sm">
-            <Flame className="h-8 w-8" />
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center justify-center gap-1.5">
-              Caffecallories
-              <Sparkles className="h-4 w-4 text-amber-500" />
-            </h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Track calories & macros naturally using AI
-            </p>
-          </div>
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12 bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100">
+      {/* Language Switcher in Top-Right Corner */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          aria-label={t.header.switchLanguage}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm text-xs font-semibold text-stone-700 dark:text-stone-300 hover:border-amber-500/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer shadow-xs"
+        >
+          <Globe className="h-3.5 w-3.5 text-amber-500" />
+          <span>{language === 'th' ? 'ไทย' : 'EN'}</span>
+        </button>
+      </div>
+
+      <div className="w-full max-w-sm space-y-6 text-center">
+        {/* Brand Logo Only */}
+        <div className="flex flex-col items-center justify-center">
+          <Image
+            src="/logo.svg"
+            alt="Callories Logo"
+            width={88}
+            height={88}
+            className="h-20 w-20 sm:h-22 sm:w-22 rounded-2xl object-contain drop-shadow-sm"
+            priority
+          />
         </div>
 
         {/* Error alerts */}
         {(errorMessage || errorParam) && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-xs text-red-600 dark:text-red-400 text-left">
-            {errorMessage || 'Authentication failed. Please try signing in again.'}
+          <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3.5 text-xs text-red-600 dark:text-red-400 text-left">
+            {errorMessage || t.auth.authFailed}
           </div>
         )}
 
         {/* Sign In Card */}
-        <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-5">
+        <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800/80 bg-white dark:bg-stone-900 p-6 shadow-xs space-y-5">
           <div className="space-y-1 text-left">
-            <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Welcome</h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Sign in with your Google account to access your personal calorie logs.
+            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
+              {t.auth.welcomeTitle}
+            </h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+              {t.auth.welcomeSubtitle}
             </p>
           </div>
 
@@ -79,9 +97,9 @@ function LoginForm() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full h-11 flex items-center justify-center gap-3 font-medium cursor-pointer"
+            className="w-full h-11 rounded-xl flex items-center justify-center gap-3 font-semibold text-xs sm:text-sm cursor-pointer bg-white hover:bg-stone-50 dark:bg-stone-800 dark:hover:bg-stone-750 text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 shadow-xs active:scale-95 transition-all"
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -99,12 +117,10 @@ function LoginForm() {
                 fill="#EA4335"
               />
             </svg>
-            {loading ? 'Connecting to Google...' : 'Continue with Google'}
+            <span>
+              {loading ? t.auth.connectingGoogle : t.auth.continueWithGoogle}
+            </span>
           </Button>
-
-          <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-            Protected by Supabase Row-Level Security. Your data is private to you.
-          </p>
         </div>
       </div>
     </div>
@@ -113,7 +129,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-stone-50 dark:bg-stone-950">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   )

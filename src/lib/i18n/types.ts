@@ -148,4 +148,13 @@ export interface TranslationDictionary {
     saveAndStart: string
     savingTarget: string
   }
+  auth: {
+    pageTitle: string
+    welcomeTitle: string
+    welcomeSubtitle: string
+    continueWithGoogle: string
+    connectingGoogle: string
+    authFailed: string
+    unexpectedError: string
+  }
 }
