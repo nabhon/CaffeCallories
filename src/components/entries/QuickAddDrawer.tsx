@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
-  Sparkles,
   ArrowUpRight,
   Loader2,
   Check,
@@ -51,7 +50,7 @@ export function QuickAddDrawer({
   onEntryAdded,
 }: QuickAddDrawerProps) {
   const queryClient = useQueryClient()
-  const { language, t } = useLanguage()
+  const { t } = useLanguage()
   const [prompt, setPrompt] = useState('')
   const [parsing, setParsing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -119,7 +118,7 @@ export function QuickAddDrawer({
 
       setDrafts(newDrafts)
     } catch {
-      setErrorStatus('Service is temporarily unavailable, please try again shortly.')
+      setErrorStatus(t.quickAdd.serviceUnavailable)
     } finally {
       setParsing(false)
     }
@@ -210,7 +209,7 @@ export function QuickAddDrawer({
       handleClose()
     } catch (err) {
       console.error('Error saving entries:', err)
-      setErrorStatus('Failed to save entries. Please try again.')
+      setErrorStatus(t.quickAdd.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -231,35 +230,24 @@ export function QuickAddDrawer({
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       <DrawerContent className="max-w-lg mx-auto rounded-t-[28px] p-5 pb-8 space-y-4 max-h-[90vh] flex flex-col">
         <DrawerHeader className="p-0 text-left space-y-1 shrink-0">
+          <DrawerTitle className="sr-only">
+            {t.quickAdd.title}
+          </DrawerTitle>
           <div className="flex items-center justify-between">
-            <DrawerTitle className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-              {t.quickAdd.title}
-              <Sparkles className="h-4 w-4 text-amber-500" />
-            </DrawerTitle>
-            <div className="flex items-center gap-1.5">
-              {isReviewMode && (
-                <Badge
-                  variant="outline"
-                  className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
-                >
-                  {drafts.length} {t.quickAdd.itemsDetected}
-                </Badge>
-              )}
+            <DrawerDescription className="text-xs text-stone-500 dark:text-stone-400">
+              {isReviewMode
+                ? t.quickAdd.reviewDescription
+                : t.quickAdd.description}
+            </DrawerDescription>
+            {isReviewMode && (
               <Badge
                 variant="outline"
-                className="text-[10px] text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/5"
+                className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shrink-0 ml-2"
               >
-                {t.quickAdd.aiBadge}
+                {drafts.length} {t.quickAdd.itemsDetected}
               </Badge>
-            </div>
+            )}
           </div>
-          <DrawerDescription className="text-xs text-stone-500 dark:text-stone-400">
-            {isReviewMode
-              ? language === 'th'
-                ? 'ตรวจสอบ แก้ไข หรือลบรายการที่ไม่ถูกต้องก่อนบันทึก'
-                : 'Review, edit or remove entries before submitting.'
-              : t.quickAdd.description}
-          </DrawerDescription>
         </DrawerHeader>
 
         {/* Prompt Input View (Shown before parsing or when no drafts exist) */}
@@ -505,9 +493,7 @@ export function QuickAddDrawer({
                         </>
                       ) : (
                         <div className="col-span-3 flex items-center justify-center text-xs text-stone-400 italic">
-                          {language === 'th'
-                            ? 'หักลบแคลอรีที่เผาผลาญ'
-                            : 'Calorie burn deduction'}
+                          {t.quickAdd.burnDeduction}
                         </div>
                       )}
                     </div>

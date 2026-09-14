@@ -109,6 +109,10 @@ export const th: TranslationDictionary = {
     noItemsLeft: 'ไม่มีรายการเหลืออยู่ พิมพ์ข้อความใหม่ด้านล่าง',
     editPrompt: 'แก้ไขข้อความ',
     itemName: 'ชื่อรายการ',
+    reviewDescription: 'ตรวจสอบ แก้ไข หรือลบรายการที่ไม่ต้องการก่อนบันทึก',
+    burnDeduction: 'หักลบแคลอรีที่เผาผลาญ',
+    serviceUnavailable: 'ระบบไม่สามารถให้บริการได้ชั่วคราว กรุณาลองใหม่อีกครั้ง',
+    saveFailed: 'เกิดข้อผิดพลาดในการบันทึกรายการ กรุณาลองใหม่อีกครั้ง',
   },
   settings: {
     pageTitle: 'ตั้งค่าและเป้าหมาย',

@@ -98,6 +98,10 @@ export interface TranslationDictionary {
     noItemsLeft: string
     editPrompt: string
     itemName: string
+    reviewDescription: string
+    burnDeduction: string
+    serviceUnavailable: string
+    saveFailed: string
   }
   settings: {
     pageTitle: string

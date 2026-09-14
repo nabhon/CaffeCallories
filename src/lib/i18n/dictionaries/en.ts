@@ -109,6 +109,10 @@ export const en: TranslationDictionary = {
     noItemsLeft: 'All items removed. Enter prompt again below.',
     editPrompt: 'Edit prompt',
     itemName: 'Item Name',
+    reviewDescription: 'Review, edit, or remove entries before logging.',
+    burnDeduction: 'Calorie burn deduction',
+    serviceUnavailable: 'Service is temporarily unavailable, please try again shortly.',
+    saveFailed: 'Failed to save entries. Please try again.',
   },
   settings: {
     pageTitle: 'Settings & Goals',
