@@ -65,14 +65,20 @@ export function Header({ userEmail, userName }: HeaderProps) {
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
         {/* Logo & Welcome Greeting */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
-          <Image
-            src="/logo.svg"
-            alt="Callories Logo"
-            width={40}
-            height={40}
-            className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-xl object-contain shadow-2xs"
-            priority
-          />
+          <Link
+            href="/"
+            aria-label="Go to Today's Dashboard"
+            className="shrink-0 transition-transform active:scale-95 hover:opacity-90 cursor-pointer"
+          >
+            <Image
+              src="/logo.svg"
+              alt="Callories Logo"
+              width={40}
+              height={40}
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl object-contain shadow-2xs"
+              priority
+            />
+          </Link>
           <div className="flex flex-col min-w-0">
             <h1 className="font-bold text-base sm:text-lg tracking-tight text-stone-900 dark:text-stone-100 truncate">
               Welcome ! {displayName}

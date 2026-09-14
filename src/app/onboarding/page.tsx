@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Sparkles, User, Activity, Target, ArrowRight, Loader2, Check } from 'lucide-react'
 
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -157,14 +158,20 @@ export default function OnboardingPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200/60 dark:border-stone-800/60">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <Image
-                src="/logo.svg"
-                alt="Callories Logo"
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-xl object-contain shadow-2xs"
-                priority
-              />
+              <Link
+                href="/"
+                aria-label="Go to Today's Dashboard"
+                className="shrink-0 transition-transform active:scale-95 hover:opacity-90 cursor-pointer"
+              >
+                <Image
+                  src="/logo.svg"
+                  alt="Callories Logo"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-xl object-contain shadow-2xs"
+                  priority
+                />
+              </Link>
               <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5 text-xs py-0.5">
                 Personalized Setup
               </Badge>
