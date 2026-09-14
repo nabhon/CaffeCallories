@@ -415,25 +415,29 @@ export default function CalendarPage() {
                           )}
                         </div>
 
-                        {/* Stacked Sum Total on top, line below, Goal number below */}
-                        <div className="w-full flex flex-col items-center justify-center my-auto py-0.5">
-                          {/* Sum total on top */}
-                          <span
-                            className={`text-[10px] sm:text-xs tracking-tight truncate max-w-full ${sumTotalClass}`}
-                          >
-                            {hasEntries ? (sumTotal > 0 ? `+${sumTotal}` : `${sumTotal}`) : '—'}
-                          </span>
+                        {/* Stacked Sum Total on top, line below, Goal number below (only if entries exist) */}
+                        {hasEntries ? (
+                          <div className="w-full flex flex-col items-center justify-center my-auto py-0.5">
+                            {/* Sum total on top */}
+                            <span
+                              className={`text-[10px] sm:text-xs tracking-tight truncate max-w-full ${sumTotalClass}`}
+                            >
+                              {Math.abs(sumTotal)}
+                            </span>
 
-                          {/* Separator line */}
-                          <div className={`w-5 sm:w-7 h-[1px] my-0.5 sm:my-1 ${dividerClass}`} />
+                            {/* Separator line */}
+                            <div className={`w-5 sm:w-7 h-[1px] my-0.5 sm:my-1 ${dividerClass}`} />
 
-                          {/* Goal number below */}
-                          <span
-                            className={`text-[9px] sm:text-[10px] tracking-tight truncate max-w-full ${goalClass}`}
-                          >
-                            {dayGoal}
-                          </span>
-                        </div>
+                            {/* Goal number below */}
+                            <span
+                              className={`text-[9px] sm:text-[10px] tracking-tight truncate max-w-full ${goalClass}`}
+                            >
+                              {dayGoal}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="my-auto" />
+                        )}
                       </button>
                     )
                   })}
@@ -575,7 +579,7 @@ export default function CalendarPage() {
                           : 'text-stone-600 dark:text-stone-400'
                       }`}
                     >
-                      {selectedSumTotal > 0 ? `+${selectedSumTotal}` : selectedSumTotal}{' '}
+                      {Math.abs(selectedSumTotal)}{' '}
                       <span className="text-xs font-normal text-stone-400">kcal</span>
                     </div>
                   </div>
