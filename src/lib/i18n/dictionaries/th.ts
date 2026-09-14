@@ -49,7 +49,7 @@ export const th: TranslationDictionary = {
   dashboard: {
     remainingToday: 'คงเหลือวันนี้',
     ofGoal: 'ของเป้าหมาย',
-    kcalLeft: 'kcal เหลือ',
+    kcalLeft: 'kcal',
     kcalOver: 'kcal เกินเป้าหมาย',
     macronutrients: 'สัดส่วนสารอาหาร',
     todaysTimeline: 'รายการบันทึกวันนี้',

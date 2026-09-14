@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, ArrowUpRight, Loader2, Check, AlertTriangle, Dumbbell, Utensils } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useQueryClient } from '@tanstack/react-query'
+import { invalidateEntries } from '@/lib/api/mutations'
 import type { ParsedEntryResult } from '@/app/api/ai/parse/route'
 import type { Entry } from '@/types/database'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
@@ -30,6 +32,7 @@ export function QuickAddDrawer({
   userId,
   onEntryAdded,
 }: QuickAddDrawerProps) {
+  const queryClient = useQueryClient()
   const { language, t } = useLanguage()
   const [prompt, setPrompt] = useState('')
   const [parsing, setParsing] = useState(false)
@@ -109,6 +112,8 @@ export function QuickAddDrawer({
         .single()
 
       if (error) throw error
+
+      await invalidateEntries(queryClient)
 
       if (data) {
         onEntryAdded(data as Entry)

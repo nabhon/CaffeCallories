@@ -2,12 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { useCurrentUser, useUserProfile, useMonthEntries } from '@/lib/api/queries'
+import { invalidateEntries } from '@/lib/api/mutations'
 import { MobileShell } from '@/components/layout/MobileShell'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingNavFab } from '@/components/layout/FloatingNavFab'
 import { QuickAddDrawer } from '@/components/entries/QuickAddDrawer'
+import { CalendarSkeleton } from '@/components/skeletons/CalendarSkeleton'
 import { Badge } from '@/components/ui/badge'
 import {
   ChevronLeft,
@@ -19,7 +23,7 @@ import {
   Loader2,
   Plus,
 } from 'lucide-react'
-import type { Entry, Profile } from '@/types/database'
+import type { Entry } from '@/types/database'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 function formatLocalDateKey(d: Date): string {
@@ -31,13 +35,10 @@ function formatLocalDateKey(d: Date): string {
 
 export default function CalendarPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { language, t } = useLanguage()
-  const [loading, setLoading] = useState(true)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [userProfile, setUserProfile] = useState<Profile | null>(null)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [monthEntries, setMonthEntries] = useState<Entry[]>([])
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -49,63 +50,25 @@ export default function CalendarPage() {
     document.title = language === 'th' ? 'ปฏิทิน Callories' : 'Calendar Callories'
   }, [language])
 
-  // Load user session and month's entries
+  // Queries
+  const { data: user, isLoading: userLoading, isFetched: userFetched } = useCurrentUser()
+  const userId = user?.id
+
+  // Redirect if unauthenticated
   useEffect(() => {
-    let ignore = false
-
-    async function loadData() {
-      try {
-        const supabase = createClient()
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser()
-
-        if (authError || !user) {
-          router.replace('/login')
-          return
-        }
-
-        if (ignore) return
-        setUserId(user.id)
-
-        // Fetch Profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
-
-        if (!ignore) setUserProfile(profile)
-
-        // Month boundary timestamps
-        const startOfMonth = new Date(currentYear, currentMonth, 1, 0, 0, 0).toISOString()
-        const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999).toISOString()
-
-        const { data: entries, error: entriesError } = await supabase
-          .from('entries')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('logged_at', startOfMonth)
-          .lte('logged_at', endOfMonth)
-          .order('logged_at', { ascending: false })
-
-        if (!ignore && !entriesError && entries) {
-          setMonthEntries(entries)
-        }
-      } catch (err) {
-        console.error('Error loading calendar data:', err)
-      } finally {
-        if (!ignore) setLoading(false)
-      }
+    if (userFetched && !user) {
+      router.replace('/login')
     }
+  }, [userFetched, user, router])
 
-    loadData()
+  const { data: userProfile, isLoading: profileLoading } = useUserProfile(userId)
+  const { data: monthEntries = [], isLoading: monthLoading } = useMonthEntries(
+    userId,
+    currentYear,
+    currentMonth
+  )
 
-    return () => {
-      ignore = true
-    }
-  }, [currentYear, currentMonth, router])
+  const isLoading = userLoading || (!!userId && (profileLoading || monthLoading))
 
   // Aggregate entries by local date string (YYYY-MM-DD)
   const entriesByDate = useMemo(() => {
@@ -175,26 +138,24 @@ export default function CalendarPage() {
   // Handle entry delete
   const handleDeleteEntry = async (id: string) => {
     setDeletingId(id)
-    const previousEntries = [...monthEntries]
-    setMonthEntries((prev) => prev.filter((item) => item.id !== id))
-
     try {
       const supabase = createClient()
       const { error } = await supabase.from('entries').delete().eq('id', id)
       if (error) {
-        setMonthEntries(previousEntries)
         console.error('Failed to delete entry:', error)
+      } else {
+        await invalidateEntries(queryClient)
       }
-    } catch {
-      setMonthEntries(previousEntries)
+    } catch (err) {
+      console.error('Failed to delete entry:', err)
     } finally {
       setDeletingId(null)
     }
   }
 
   // Handle new entry added from drawer
-  const handleEntryAdded = (newEntry: Entry) => {
-    setMonthEntries((prev) => [newEntry, ...prev])
+  const handleEntryAdded = async () => {
+    await invalidateEntries(queryClient)
   }
 
   const monthName = currentDate.toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', {
@@ -210,15 +171,8 @@ export default function CalendarPage() {
 
   const todayKey = formatLocalDateKey(new Date())
 
-  if (loading) {
-    return (
-      <MobileShell>
-        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-xs text-stone-400">{t.calendar.loadingCalendar}</p>
-        </div>
-      </MobileShell>
-    )
+  if (isLoading) {
+    return <CalendarSkeleton />
   }
 
   return (

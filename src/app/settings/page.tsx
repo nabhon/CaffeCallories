@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import { calculateTDEE, type Gender, type ActivityLevel, type FitnessGoal } from '@/lib/calculator/tdee'
+import { useCurrentUser, useUserProfile, useUserSettings } from '@/lib/api/queries'
+import { invalidateProfile, invalidateSettings } from '@/lib/api/mutations'
 import { MobileShell } from '@/components/layout/MobileShell'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingNavFab } from '@/components/layout/FloatingNavFab'
 import { QuickAddDrawer } from '@/components/entries/QuickAddDrawer'
+import { SettingsSkeleton } from '@/components/skeletons/SettingsSkeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -17,114 +20,110 @@ import {
   Activity,
   Target,
   Sparkles,
-  Loader2,
   Check,
+  Loader2,
   Save,
   CheckCircle2,
   ArrowLeft,
 } from 'lucide-react'
-import type { Profile } from '@/types/database'
+import {
+  calculateTDEE,
+  type ActivityLevel,
+  type FitnessGoal,
+  type Gender,
+} from '@/lib/calculator/tdee'
+import type { Profile, ProfileSettings } from '@/types/database'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { language, t } = useLanguage()
-  const [loading, setLoading] = useState(true)
+  const { language } = useLanguage()
+
+  // Dynamic localized page title
+  useEffect(() => {
+    document.title = language === 'th' ? 'ตั้งค่า | Callories' : 'Settings | Callories'
+  }, [language])
+
+  // Queries
+  const { data: user, isLoading: userLoading, isFetched: userFetched } = useCurrentUser()
+  const userId = user?.id
+
+  // Redirect if unauthenticated
+  useEffect(() => {
+    if (userFetched && !user) {
+      router.replace('/login')
+    }
+  }, [userFetched, user, router])
+
+  const { data: userProfile, isLoading: profileLoading } = useUserProfile(userId)
+  const { data: userSettings, isLoading: settingsLoading } = useUserSettings(userId)
+
+  const isLoading = userLoading || (!!userId && (profileLoading || settingsLoading))
+
+  if (isLoading || !user) {
+    return <SettingsSkeleton />
+  }
+
+  return (
+    <SettingsForm
+      userId={user.id}
+      userEmail={user.email}
+      initialProfile={userProfile}
+      initialSettings={userSettings}
+    />
+  )
+}
+
+interface SettingsFormProps {
+  userId: string
+  userEmail?: string | null
+  initialProfile: Profile | null | undefined
+  initialSettings: ProfileSettings | null | undefined
+}
+
+function SettingsForm({
+  userId,
+  userEmail,
+  initialProfile,
+  initialSettings,
+}: SettingsFormProps) {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const { t } = useLanguage()
   const [saving, setSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [userProfile, setUserProfile] = useState<Profile | null>(null)
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
 
-  // Biometrics & Goals Form State
-  const [name, setName] = useState('')
+  // Biometrics & Goals Form State initialized from query cache
+  const [name, setName] = useState(initialProfile?.name || '')
   const [gender, setGender] = useState<Gender>('male')
   const [age, setAge] = useState<number>(25)
-  const [heightCm, setHeightCm] = useState<number>(175)
-  const [weightKg, setWeightKg] = useState<number>(70)
-  const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderate')
+  const [heightCm, setHeightCm] = useState<number>(
+    initialProfile?.height_cm ? Number(initialProfile.height_cm) : 175
+  )
+  const [weightKg, setWeightKg] = useState<number>(
+    initialProfile?.weight_kg ? Number(initialProfile.weight_kg) : 70
+  )
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>(
+    (initialSettings?.activity_level as ActivityLevel) || 'moderate'
+  )
   const [goal, setGoal] = useState<FitnessGoal>('maintain')
 
   // Custom manual targets (optional override)
   const [useCustomTargets, setUseCustomTargets] = useState(false)
-  const [customCalories, setCustomCalories] = useState<number>(2000)
-  const [customProtein, setCustomProtein] = useState<number>(140)
-  const [customCarbs, setCustomCarbs] = useState<number>(220)
-  const [customFat, setCustomFat] = useState<number>(65)
-
-  // Load user session, profile, and existing settings on mount
-  useEffect(() => {
-    document.title = language === 'th' ? 'ตั้งค่า | Callories' : 'Settings | Callories'
-    let ignore = false
-
-    async function loadData() {
-      try {
-        const supabase = createClient()
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser()
-
-        if (authError || !user) {
-          router.replace('/login')
-          return
-        }
-
-        if (ignore) return
-        setUserId(user.id)
-
-        // 1. Fetch Profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
-
-        if (!ignore && profile) {
-          setUserProfile(profile)
-          if (profile.name) setName(profile.name)
-          if (profile.height_cm) setHeightCm(Number(profile.height_cm))
-          if (profile.weight_kg) setWeightKg(Number(profile.weight_kg))
-        }
-
-        // 2. Fetch Profile Settings
-        const { data: settings } = await supabase
-          .from('profile_settings')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        if (!ignore && settings) {
-          if (settings.activity_level) {
-            setActivityLevel(settings.activity_level as ActivityLevel)
-          }
-          if (settings.daily_calorie_goal) {
-            setCustomCalories(Number(settings.daily_calorie_goal))
-          }
-          if (settings.target_protein_g) {
-            setCustomProtein(Number(settings.target_protein_g))
-          }
-          if (settings.target_carbs_g) {
-            setCustomCarbs(Number(settings.target_carbs_g))
-          }
-          if (settings.target_fat_g) {
-            setCustomFat(Number(settings.target_fat_g))
-          }
-        }
-      } catch (err) {
-        console.error('Error loading settings:', err)
-      } finally {
-        if (!ignore) setLoading(false)
-      }
-    }
-
-    loadData()
-
-    return () => {
-      ignore = true
-    }
-  }, [router, language])
+  const [customCalories, setCustomCalories] = useState<number>(
+    initialSettings?.daily_calorie_goal || 2000
+  )
+  const [customProtein, setCustomProtein] = useState<number>(
+    initialSettings?.target_protein_g || 140
+  )
+  const [customCarbs, setCustomCarbs] = useState<number>(
+    initialSettings?.target_carbs_g || 220
+  )
+  const [customFat, setCustomFat] = useState<number>(
+    initialSettings?.target_fat_g || 65
+  )
 
   // Real-time calculated targets based on current biometric inputs
   const calculation = useMemo(() => {
@@ -189,8 +188,8 @@ export default function SettingsPage() {
 
         if (settingsError) throw settingsError
 
-        // Update local userProfile state
-        setUserProfile((prev) => (prev ? { ...prev, name: name.trim() } : null))
+        await invalidateProfile(queryClient, userId)
+        await invalidateSettings(queryClient, userId)
         setSuccessMessage(t.settings.successMessage)
 
         // Auto-clear success message after 4s
@@ -208,21 +207,10 @@ export default function SettingsPage() {
     // No-op on settings page
   }
 
-  if (loading) {
-    return (
-      <MobileShell>
-        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-xs text-stone-400">{t.settings.loadingSettings}</p>
-        </div>
-      </MobileShell>
-    )
-  }
-
   return (
     <MobileShell>
       {/* Sticky Header */}
-      <Header userEmail={userProfile?.email} userName={userProfile?.name} />
+      <Header userEmail={userEmail} userName={name || initialProfile?.name} />
 
       {/* Main Content Area - Expands to Responsive 2-Column Grid on Desktop */}
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-12 overflow-y-auto">

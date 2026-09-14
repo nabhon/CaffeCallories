@@ -2,12 +2,21 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import {
+  useCurrentUser,
+  useUserProfile,
+  useUserSettings,
+  useTodayEntries,
+} from '@/lib/api/queries'
+import { invalidateEntries } from '@/lib/api/mutations'
 import { MobileShell } from '@/components/layout/MobileShell'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingNavFab } from '@/components/layout/FloatingNavFab'
 import { QuickAddDrawer } from '@/components/entries/QuickAddDrawer'
+import { TodaySkeleton } from '@/components/skeletons/TodaySkeleton'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -19,17 +28,12 @@ import {
   Plus,
   Loader2,
 } from 'lucide-react'
-import type { Entry, ProfileSettings, Profile } from '@/types/database'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function TodayDashboardPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { language, t } = useLanguage()
-  const [loading, setLoading] = useState(true)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [userProfile, setUserProfile] = useState<Profile | null>(null)
-  const [userSettings, setUserSettings] = useState<ProfileSettings | null>(null)
-  const [todayEntries, setTodayEntries] = useState<Entry[]>([])
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -38,79 +42,35 @@ export default function TodayDashboardPage() {
     document.title = language === 'th' ? 'วันนี้ Callories' : 'Today Callories'
   }, [language])
 
-  // Fetch initial user, settings, and today's logs on mount
+  // Queries
+  const { data: user, isLoading: userLoading, isFetched: userFetched } = useCurrentUser()
+  const userId = user?.id
+
+  // Redirect if unauthenticated
   useEffect(() => {
-    let ignore = false
-
-    async function loadData() {
-      try {
-        const supabase = createClient()
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser()
-
-        if (authError || !user) {
-          router.replace('/login')
-          return
-        }
-
-        if (ignore) return
-        setUserId(user.id)
-
-        // 1. Fetch Profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
-
-        if (!ignore) setUserProfile(profile)
-
-        // 2. Fetch Settings / Goals
-        const { data: settings } = await supabase
-          .from('profile_settings')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        if (!settings) {
-          // First-time user without completed onboarding
-          router.replace('/onboarding')
-          return
-        }
-
-        if (!ignore) setUserSettings(settings)
-
-        // 3. Fetch Today's Entries
-        const now = new Date()
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).toISOString()
-        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString()
-
-        const { data: entries, error: entriesError } = await supabase
-          .from('entries')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('logged_at', startOfDay)
-          .lte('logged_at', endOfDay)
-          .order('logged_at', { ascending: false })
-
-        if (!ignore && !entriesError && entries) {
-          setTodayEntries(entries)
-        }
-      } catch (err) {
-        console.error('Error loading dashboard:', err)
-      } finally {
-        if (!ignore) setLoading(false)
-      }
+    if (userFetched && !user) {
+      router.replace('/login')
     }
+  }, [userFetched, user, router])
 
-    loadData()
+  const { data: userProfile, isLoading: profileLoading } = useUserProfile(userId)
+  const {
+    data: userSettings,
+    isLoading: settingsLoading,
+    isFetched: settingsFetched,
+  } = useUserSettings(userId)
 
-    return () => {
-      ignore = true
+  // Redirect if user has not completed onboarding
+  useEffect(() => {
+    if (settingsFetched && !userSettings && user) {
+      router.replace('/onboarding')
     }
-  }, [router])
+  }, [settingsFetched, userSettings, user, router])
+
+  const { data: todayEntries = [], isLoading: entriesLoading } = useTodayEntries(userId)
+
+  const isLoading =
+    userLoading || (!!userId && (profileLoading || settingsLoading || entriesLoading))
 
   // Real-time calculations
   const metrics = useMemo(() => {
@@ -119,77 +79,90 @@ export default function TodayDashboardPage() {
     const targetCarbs = userSettings?.target_carbs_g || 220
     const targetFat = userSettings?.target_fat_g || 65
 
-    let totalIntake = 0
-    let totalBurn = 0
-    let totalProtein = 0
-    let totalCarbs = 0
-    let totalFat = 0
+    let intake = 0
+    let burn = 0
+    let protein = 0
+    let carbs = 0
+    let fat = 0
 
     todayEntries.forEach((entry) => {
-      if (entry.entry_type === 'burn') {
-        totalBurn += Math.abs(entry.calories)
-      } else {
-        totalIntake += entry.calories
-        totalProtein += Number(entry.protein_g) || 0
-        totalCarbs += Number(entry.carbs_g) || 0
-        totalFat += Number(entry.fat_g) || 0
+      const entryType = entry.entry_type
+      if (entryType === 'intake') {
+        intake += entry.calories
+        protein += Number(entry.protein_g) || 0
+        carbs += Number(entry.carbs_g) || 0
+        fat += Number(entry.fat_g) || 0
+      } else if (entryType === 'burn') {
+        burn += Math.abs(entry.calories)
       }
     })
 
-    const netCalories = totalIntake - totalBurn
-    const remainingCalories = dailyGoal - netCalories
+    const netCalories = intake - burn
+    const remaining = dailyGoal - netCalories
+    const remainingCalories = remaining
+    const isOver = remaining < 0
+
+    // Calorie Gauge percentage (based on net calories vs goal)
+    const gaugePercent = Math.min(Math.max((netCalories / dailyGoal) * 100, 0), 100)
     const progressPercent = Math.min(100, Math.max(0, Math.round((netCalories / dailyGoal) * 100)))
+
+    // Macro percentages
+    const proteinPercent = Math.min(Math.round((protein / targetProtein) * 100), 100)
+    const carbsPercent = Math.min(Math.round((carbs / targetCarbs) * 100), 100)
+    const fatPercent = Math.min(Math.round((fat / targetFat) * 100), 100)
 
     return {
       dailyGoal,
-      totalIntake,
-      totalBurn,
-      netCalories,
-      remainingCalories,
-      progressPercent,
       targetProtein,
       targetCarbs,
       targetFat,
-      totalProtein: Math.round(totalProtein),
-      totalCarbs: Math.round(totalCarbs),
-      totalFat: Math.round(totalFat),
+      intake,
+      burn,
+      totalIntake: intake,
+      totalBurn: burn,
+      protein: Math.round(protein),
+      carbs: Math.round(carbs),
+      fat: Math.round(fat),
+      totalProtein: Math.round(protein),
+      totalCarbs: Math.round(carbs),
+      totalFat: Math.round(fat),
+      netCalories,
+      remaining,
+      remainingCalories,
+      isOver,
+      gaugePercent,
+      progressPercent,
+      proteinPercent,
+      carbsPercent,
+      fatPercent,
     }
-  }, [userSettings, todayEntries])
+  }, [todayEntries, userSettings])
 
-  // Handle entry delete
+  // Delete entry and invalidate queries
   const handleDeleteEntry = async (id: string) => {
     setDeletingId(id)
-    const previousEntries = [...todayEntries]
-    setTodayEntries((prev) => prev.filter((item) => item.id !== id))
-
     try {
       const supabase = createClient()
       const { error } = await supabase.from('entries').delete().eq('id', id)
       if (error) {
-        setTodayEntries(previousEntries)
         console.error('Failed to delete entry:', error)
+      } else {
+        await invalidateEntries(queryClient)
       }
-    } catch {
-      setTodayEntries(previousEntries)
+    } catch (err) {
+      console.error('Failed to delete entry:', err)
     } finally {
       setDeletingId(null)
     }
   }
 
   // Handle new entry added from drawer
-  const handleEntryAdded = (newEntry: Entry) => {
-    setTodayEntries((prev) => [newEntry, ...prev])
+  const handleEntryAdded = async () => {
+    await invalidateEntries(queryClient)
   }
 
-  if (loading) {
-    return (
-      <MobileShell>
-        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-xs text-stone-400">{t.dashboard.loadingBudget}</p>
-        </div>
-      </MobileShell>
-    )
+  if (isLoading) {
+    return <TodaySkeleton />
   }
 
   return (

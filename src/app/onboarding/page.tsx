@@ -2,86 +2,90 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { useCurrentUser, useUserProfile, useUserSettings } from '@/lib/api/queries'
+import { invalidateProfile, invalidateSettings } from '@/lib/api/mutations'
+import { OnboardingSkeleton } from '@/components/skeletons/OnboardingSkeleton'
 import { calculateTDEE, type Gender, type ActivityLevel, type FitnessGoal } from '@/lib/calculator/tdee'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, User, Activity, Target, ArrowRight, Loader2, Check } from 'lucide-react'
 
+import type { Profile, ProfileSettings } from '@/types/database'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function OnboardingPage() {
   const router = useRouter()
+
+  // Queries
+  const { data: user, isLoading: userLoading, isFetched: userFetched } = useCurrentUser()
+  const userId = user?.id
+
+  // Redirect if unauthenticated
+  useEffect(() => {
+    if (userFetched && !user) {
+      router.replace('/login')
+    }
+  }, [userFetched, user, router])
+
+  const { data: userProfile, isLoading: profileLoading } = useUserProfile(userId)
+  const { data: userSettings, isLoading: settingsLoading } = useUserSettings(userId)
+
+  const isLoading = userLoading || (!!userId && (profileLoading || settingsLoading))
+
+  if (isLoading || !user) {
+    return <OnboardingSkeleton />
+  }
+
+  return (
+    <OnboardingForm
+      user={user}
+      initialProfile={userProfile}
+      initialSettings={userSettings}
+    />
+  )
+}
+
+interface OnboardingFormProps {
+  user: SupabaseUser
+  initialProfile: Profile | null | undefined
+  initialSettings: ProfileSettings | null | undefined
+}
+
+function OnboardingForm({
+  user,
+  initialProfile,
+  initialSettings,
+}: OnboardingFormProps) {
+  const router = useRouter()
+  const queryClient = useQueryClient()
   const { t } = useLanguage()
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
 
-  // Form State
-  const [name, setName] = useState('')
+  // Form State initialized from query cache
+  const [name, setName] = useState(
+    initialProfile?.name || user.user_metadata?.full_name || ''
+  )
   const [gender, setGender] = useState<Gender>('male')
   const [age, setAge] = useState<number>(25)
-  const [heightCm, setHeightCm] = useState<number>(175)
-  const [weightKg, setWeightKg] = useState<number>(70)
-  const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderate')
+  const [heightCm, setHeightCm] = useState<number>(
+    initialProfile?.height_cm ? Number(initialProfile.height_cm) : 175
+  )
+  const [weightKg, setWeightKg] = useState<number>(
+    initialProfile?.weight_kg ? Number(initialProfile.weight_kg) : 70
+  )
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>(
+    (initialSettings?.activity_level as ActivityLevel) || 'moderate'
+  )
   const [goal, setGoal] = useState<FitnessGoal>('maintain')
 
-  // Check auth and pre-fill existing profile data if any
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const supabase = createClient()
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser()
-
-        if (userError || !user) {
-          router.replace('/login')
-          return
-        }
-
-        setUserId(user.id)
-        if (user.user_metadata?.full_name) {
-          setName(user.user_metadata.full_name)
-        }
-
-        // Check if profile exists
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
-
-        if (profile) {
-          if (profile.name) setName(profile.name)
-          if (profile.height_cm) setHeightCm(Number(profile.height_cm))
-          if (profile.weight_kg) setWeightKg(Number(profile.weight_kg))
-        }
-
-        // Check if settings exist
-        const { data: settings } = await supabase
-          .from('profile_settings')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        if (settings) {
-          if (settings.activity_level) setActivityLevel(settings.activity_level as ActivityLevel)
-        }
-      } catch {
-        // Continue with defaults in local development
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadUser()
-  }, [router])
+  const userId = user.id
 
   // Real-time calculated targets
   const calculation = useMemo(() => {
@@ -131,6 +135,9 @@ export default function OnboardingPage() {
           })
 
         if (settingsError) throw settingsError
+
+        await invalidateProfile(queryClient, userId)
+        await invalidateSettings(queryClient, userId)
       }
 
       router.push('/')
@@ -140,17 +147,6 @@ export default function OnboardingPage() {
       setErrorMessage(error.message || 'Failed to save settings. Please try again.')
       setSaving(false)
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="w-full min-h-screen flex items-center justify-center p-4 bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-sm text-stone-500">Loading your profile...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
